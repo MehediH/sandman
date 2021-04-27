@@ -1,17 +1,30 @@
-import { getLyrics, getSong } from 'genius-lyrics-api';
+import { getLyrics } from 'genius-lyrics-api';
 
-
-export default async function helloAPI(req, res) {
-	const { songName, artistName } = req.query;
-
+const getLyricsFromGenius = async ( songName, artistName ) => {
 	const options = {
 		apiKey: process.env.NEXT_PUBLIC_GENIUS_KEY,
-		title: songName ? songName : "STARGAZING",
-		artist: artistName ? artistName : "Travis Scott",
+		title: songName ? songName : "",
+		artist: artistName ? artistName : "",
 		optimizeQuery: true
 	};
 
-  const lyrics = await getLyrics(options);
+	try{
+		return { data: await getLyrics(options), err: null };
+	} catch(err){
+		return { data: null, err: err.message };
+	}
+}
 
-  res.status(200).send(lyrics)
+export default async function getLyricsEndpoint(req, res) {
+	const { songName, artistName } = req.query;
+
+	if(!songName) return res.status(400).send("'songName' parameter is missing for the request.");
+
+	const songLyrics = await getLyricsFromGenius(songName, artistName);
+
+	if(err){
+        return res.status(400).send(err);
+    }
+
+	res.status(200).send(songLyrics);
 }
