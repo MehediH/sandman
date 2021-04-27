@@ -20,7 +20,7 @@ export default async function getLyricsEndpoint(req, res) {
 
 	if(!songName) return res.status(400).send("'songName' parameter is missing for the request.");
 
-	const songLyrics = await getLyricsFromGenius(songName, artistName);
+	const { data: songLyrics, err } = await getLyricsFromGenius(songName, artistName);
 
 	if(err){
         return res.status(400).send(err);
