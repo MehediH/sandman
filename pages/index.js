@@ -1,5 +1,13 @@
 import Head from 'next/head'
 import { useEffect, useState } from 'react'
+import Search from '../components/search';
+
+const cleanLyrics = (text) => {
+  // remove puntuation
+  text = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()'"?]/g,'')
+  return text.replace(/\[.*?\]/g, '').toLowerCase();
+};
+
 
 export default function Home() {
   const [lyrics, setLyrics] = useState("");
@@ -8,8 +16,7 @@ export default function Home() {
     const getSong = async () => {
       const d = await fetch("/api/getLyrics?songName=Phoenix&artistName=A$AP%20Rocky").then(res => res.text());
 
-      setLyrics(d)
-
+      setLyrics(cleanLyrics(d))
     }
 
     getSong();
@@ -23,18 +30,17 @@ export default function Home() {
       </Head>
 
       <main className="flex flex-col items-center justify-center flex-1 px-20 text-center">
+        <Search/>
         <h1 className="text-6xl font-bold">
           Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
         </h1>
 
         <div className="flex justify-center items-center">
-          <p>{lyrics}</p>
+          <p className='text-2xl font-mono mx-24'>{lyrics}</p>
         </div>
       </main>
 
     </div>
   )
 }
+
