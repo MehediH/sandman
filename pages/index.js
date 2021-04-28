@@ -48,7 +48,6 @@ export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
         <label htmlFor="hideProfanity" className="opacity-70 hover:opacity-100 transition-all cursor-pointer">
           <input tabIndex="0" type="checkbox" id="hideProfanity" className="rounded-sm mr-2" onChange={() => {
             setPorfanityHidden(h => !h)
-            console.log("hi")
           }} checked={profanityHidden}/>
           <span>Filter profanity</span>
         </label>
