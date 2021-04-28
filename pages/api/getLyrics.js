@@ -1,6 +1,6 @@
 import { getLyrics } from 'genius-lyrics-api';
 
-const getLyricsFromGenius = async ( songName, artistName ) => {
+export const getLyricsFromGenius = async ( songName, artistName ) => {
 	const options = {
 		apiKey: process.env.NEXT_PUBLIC_GENIUS_KEY,
 		title: songName ? songName : "",

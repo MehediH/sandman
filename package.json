@@ -8,6 +8,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "@tailwindcss/forms": "^0.3.2",
+    "bad-words": "^3.0.4",
     "genius-lyrics-api": "^3.0.6",
     "next": "latest",
     "react": "^17.0.1",

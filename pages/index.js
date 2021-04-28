@@ -1,15 +1,12 @@
 import Head from 'next/head'
 import { useEffect, useState } from 'react'
 import Search from '../components/search';
+import Song from '../components/Song';
+import { cleanLyrics } from '../lib/utils';
+import { getLyricsFromGenius } from './api/getLyrics';
+import { searchSongsOnGenius } from './api/searchSongs';
 
-const cleanLyrics = (text) => {
-  // remove puntuation
-  text = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()'"?]/g,'')
-  return text.replace(/\[.*?\]/g, '').toLowerCase();
-};
-
-
-export default function Home() {
+export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
   const [lyrics, setLyrics] = useState("");
 
   useEffect(() => {
@@ -19,28 +16,45 @@ export default function Home() {
       setLyrics(cleanLyrics(d))
     }
 
-    getSong();
+    // getSong();
   })
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
+    <div className="bg-gradient-to-b from-purple-600 via-purple-400 to-purple-300 text-white">
       <Head>
-        <title>Create Next App</title>
+        <title>sandman</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="flex flex-col items-center justify-center flex-1 px-20 text-center">
-        <Search/>
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-        </h1>
+      <div className="py-20 max-w-screen-2xl m-auto flex flex-col h-screen">
+        <h1 className="text-5xl select-none">🎧</h1>
 
-        <div className="flex justify-center items-center">
-          <p className='text-2xl font-mono mx-24'>{lyrics}</p>
-        </div>
-      </main>
+        <Search/>
+
+        <Song data={defaultSongMetadata} currentlyPlaying={true}/>
+
+        <p className='text-2xl font-mono text-left items-center mt-20'>{defaultSongLyrics}</p>
+      </div>
 
     </div>
   )
 }
 
+export async function getStaticProps(context) {
+  const defaultSongName = "Phoenix", defaultSongArtist = "ASAP Rocky";
+
+  const { data: defaultSongLyrics, err } = await getLyricsFromGenius(defaultSongName, defaultSongArtist);
+  const { data: songMetadata } = await searchSongsOnGenius(defaultSongName, defaultSongArtist);
+
+  if (err) {
+    return {
+      props: {
+        err
+      },
+    }
+  }
+
+  return {
+    props: { defaultSongLyrics: cleanLyrics(defaultSongLyrics), defaultSongMetadata: Object.values(songMetadata)[0] }
+  }
+}

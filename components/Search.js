@@ -2,6 +2,7 @@ import { useState } from "react"
 
 export default function Search() {
   const [search, setSearch] = useState('')
+  
   const [result, setResult] = useState({})
   const handleChange = (e) => {
     setSearch(e.target.value)
