@@ -1,23 +1,14 @@
 import Head from 'next/head'
 import { useEffect, useState } from 'react'
+import Lyrics from '../components/Lyrics';
 import Search from '../components/search';
 import Song from '../components/Song';
-import { cleanLyrics } from '../lib/utils';
 import { getLyricsFromGenius } from './api/getLyrics';
 import { searchSongsOnGenius } from './api/searchSongs';
+import { cleanLyrics } from '../lib/utils';
 
 export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
-  const [lyrics, setLyrics] = useState("");
-
-  useEffect(() => {
-    const getSong = async () => {
-      const d = await fetch("/api/getLyrics?songName=Phoenix&artistName=A$AP%20Rocky").then(res => res.text());
-
-      setLyrics(cleanLyrics(d))
-    }
-
-    // getSong();
-  })
+  const [ profanityHidden, setPorfanityHidden ] = useState(true);
 
   return (
     <div className="bg-gradient-to-b from-purple-600 via-purple-400 to-purple-300 text-white">
@@ -33,7 +24,15 @@ export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
 
         <Song data={defaultSongMetadata} currentlyPlaying={true}/>
 
-        <p className='text-2xl font-mono text-left items-center mt-20'>{defaultSongLyrics}</p>
+        <label htmlFor="hideProfanity" className="opacity-70 hover:opacity-100 transition-all cursor-pointer">
+          <input type="checkbox" id="hideProfanity" className="rounded-sm mr-2" onChange={() => {
+            setPorfanityHidden(h => !h)
+            console.log("hi")
+          }} checked={profanityHidden}/>
+          <span>Filter profanity</span>
+        </label>
+
+        <Lyrics lyricsData={defaultSongLyrics} profanityHidden={profanityHidden}/>
       </div>
 
     </div>
@@ -54,7 +53,9 @@ export async function getStaticProps(context) {
     }
   }
 
+  const { lyrics, filteredLyrics} = cleanLyrics(defaultSongLyrics);
+
   return {
-    props: { defaultSongLyrics: cleanLyrics(defaultSongLyrics), defaultSongMetadata: Object.values(songMetadata)[0] }
+    props: { defaultSongLyrics: { lyrics, filteredLyrics }, defaultSongMetadata: Object.values(songMetadata)[0] }
   }
 }
