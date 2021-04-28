@@ -18,9 +18,10 @@ export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
       </Head>
 
       <div className="py-20 max-w-screen-2xl m-auto flex flex-col h-screen">
-        <h1 className="text-5xl select-none">🎧</h1>
-
-        <Search/>
+        <div className="flex items-center">
+          <h1 className="text-5xl select-none mr-5">🎧</h1>
+          <Search/>
+        </div>
 
         <Song data={defaultSongMetadata} currentlyPlaying={true}/>
 

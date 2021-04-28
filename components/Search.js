@@ -1,22 +1,43 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import useDebounce from "../lib/useDebounce";
+import SearchResults from "./SearchResults";
 
 export default function Search() {
   const [search, setSearch] = useState('')
+  const [results, setResults] = useState([])
+
+  const debouncedSearchTerm = useDebounce(search, 200);
+
+  useEffect(() => {
+      if (debouncedSearchTerm) {
+        searchSongs(debouncedSearchTerm).then((results) => {
+          setResults(results);
+        });
+      } else {
+        setResults([]);
+      }
+    }, [debouncedSearchTerm] // Only call effect if debounced search term changes
+  );
   
-  const [result, setResult] = useState({})
-  const handleChange = (e) => {
-    setSearch(e.target.value)
+  const searchSongs = async (query) => {
+    const response = await fetch(`/api/searchSongs?songName=${search}`).then(res => res.json());
+
+    return Object.values(response).slice(0, 5);
   }
 
   return (
-    <form onSubmit={async (e) => {
-      e.preventDefault()
-      const response = await fetch(`/api/searchSongs?songName=${search}`).then(res => res.json());
-      setResult(response[0].title)
-    }}>
-      <label htmlFor='input'>Search
-      <input className='bg-gray-200' type='text' value={search} onChange={(e) => handleChange(e)}/></label>
-      <button type='submit'>Search song</button>
-    </form>
-    )
+    <div className="">
+      <input
+        placeholder="Search songs..."
+        type="text"
+        onChange={(e) => setSearch(e.target.value)}
+        className="text-black rounded-lg shadow-xl w-80"
+        onKeyDown={(e) => {
+          if(e.key === "Escape") setResults([]);
+        }}
+      />
+
+      { results.length != 0 && <SearchResults results={results} hideResults={() => setResults([])}/>}
+    </div>  
+  )
 }
