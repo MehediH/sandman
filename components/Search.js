@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import useDebounce from "../lib/useDebounce";
 import SearchResults from "./SearchResults";
 
-export default function Search() {
+export default function Search({ selectSong }) {
   const [search, setSearch] = useState('')
   const [results, setResults] = useState([])
 
@@ -30,6 +30,7 @@ export default function Search() {
       <input
         placeholder="Search songs..."
         type="text"
+        tabIndex="1"
         onChange={(e) => setSearch(e.target.value)}
         className="text-black rounded-lg shadow-xl w-80"
         onKeyDown={(e) => {
@@ -37,7 +38,7 @@ export default function Search() {
         }}
       />
 
-      { results.length != 0 && <SearchResults results={results} hideResults={() => setResults([])}/>}
+      { results.length != 0 && <SearchResults results={results} hideResults={() => setResults([])} selectSong={selectSong}/>}
     </div>  
   )
 }

@@ -13,7 +13,8 @@
     "genius-lyrics-api": "^3.0.6",
     "next": "latest",
     "react": "^17.0.1",
-    "react-dom": "^17.0.1"
+    "react-dom": "^17.0.1",
+    "react-loading-skeleton": "^2.2.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.0.4",

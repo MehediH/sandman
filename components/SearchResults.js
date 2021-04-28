@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react';
 
-const SearchResults = ({ results, hideResults }) => {
+const SearchResults = ({ results, hideResults, selectSong }) => {
     const resultsContainer = useRef(null);
 
     useEffect(() => {
@@ -23,8 +23,22 @@ const SearchResults = ({ results, hideResults }) => {
 
     return (
         <div ref={resultsContainer} className="bg-gray-200 p-5 rounded-lg shadow-xl my-5 text-black w-80 absolute transition-all z-50" >
-          { results.map((result) => (
-            <div key={result.id} className="flex mb-3">
+          { results.map((result, index) => (
+            <div
+                key={result.id}
+                tabIndex={index+2}
+                onClick={() => {
+                    selectSong(result);
+                    hideResults();
+                }}
+                className="flex mb-3 focus:opacity-75 hover:opacity-75 cursor-pointer transition-all"
+                onKeyDown={(e) => {
+                    if(e.code === "Space" || e.code === "Enter"){
+                        selectSong(result);
+                        hideResults();
+                    }
+                }}
+            >
               <img src={result.albumArt} width="50" height="50" alt={result.title} draggable="false" className="rounded-lg shadow-xl mr-3 self-start"/>
               <div className="flex flex-col">
                 <h3>{result.title.split("by")[0]}</h3>
