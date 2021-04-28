@@ -3,7 +3,11 @@ export const searchSpotify = async ( q ) => {
         const songName = encodeURIComponent(q.split("by")[0]);
 
         let artistName = q.split("by")[1].substr(1);
-        artistName = artistName.substr(0, artistName.indexOf("(")) // need to filter out features like (ft. 2 Chainz)
+
+        if(artistName.indexOf("(") !== -1){
+            artistName = artistName.substr(0, artistName.indexOf("(")) // need to filter out features like (ft. 2 Chainz)
+        }
+
         artistName = encodeURIComponent(artistName);
 
         const data = await fetch(
