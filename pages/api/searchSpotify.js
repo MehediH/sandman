@@ -19,7 +19,9 @@ export const searchSpotify = async ( q ) => {
             }
         ).then(res => res.json());
 
-        console.log(data)
+        if(data.error){
+            return { data: null, err: data.error.message }
+        }
 
         return { data: data.tracks.items, err: null };
 	} catch(err){
