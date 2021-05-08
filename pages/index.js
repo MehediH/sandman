@@ -51,6 +51,7 @@ export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
           }} checked={profanityHidden}/>
           <span>Filter profanity</span>
         </label>
+        
         {!lyricsLoading ? <Lyrics lyricsData={lyrics} profanityHidden={profanityHidden}/> : <LyricsPlaceholder/>}
       </div>
 
