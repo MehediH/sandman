@@ -9,7 +9,7 @@ import { cleanLyrics } from '../lib/utils';
 import LyricsPlaceholder from '../components/LyricsPlaceholder';
 
 export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
-  const [ profanityHidden, setPorfanityHidden ] = useState(true);
+  const [ profanityHidden, setProfanityHidden ] = useState(true);
   const [ lyrics, setLyrics ] = useState(defaultSongLyrics);
   const [ lyricsLoading, setLyricsLoading ] = useState(false);
 
@@ -47,11 +47,10 @@ export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
 
         <label htmlFor="hideProfanity" className="opacity-70 hover:opacity-100 transition-all cursor-pointer">
           <input tabIndex="0" type="checkbox" id="hideProfanity" className="rounded-sm mr-2" onChange={() => {
-            setPorfanityHidden(h => !h)
+            setProfanityHidden(h => !h)
           }} checked={profanityHidden}/>
           <span>Filter profanity</span>
         </label>
-
         {!lyricsLoading ? <Lyrics lyricsData={lyrics} profanityHidden={profanityHidden}/> : <LyricsPlaceholder/>}
       </div>
 
