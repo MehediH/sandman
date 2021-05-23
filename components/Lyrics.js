@@ -1,11 +1,14 @@
-import { useEffect, useState, useCallback, memo } from "react";
+import { useEffect, useState, useCallback, memo, useRef } from "react";
 
 // lyricsData is an Object with `lyrics` and `filteredLyrics`
 const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
-  const [lyrics, setLyrics] = useState([]);
-  const [lyricsByWord, setLyricsByWord] = useState([]);
+  const [lyricsByWord, setLyricsByWord] = useState(
+    profanityHidden ? lyricsData.filteredLyrics : lyricsData.lyrics
+  );
   const [userTyping, setUserTyping] = useState([]);
-  const [activeWordIndex, setActiveWordIndex] = useState("");
+  const [activeWordIndex, setActiveWordIndex] = useState(0);
+  const lyricsContainer = useRef(null);
+  const [caretPosition, setCaretPosition] = useState({ x: 0, y: 0 });
 
   const handleUserKeyPress = useCallback((e) => {
     const { key, keyCode } = e;
@@ -18,14 +21,21 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
       setUserTyping((prevUserTyping) => {
         if (prevUserTyping[prevUserTyping.length - 1]) {
           let currentWord = prevUserTyping[prevUserTyping.length - 1];
-          currentWord.pop();
-          prevUserTyping[prevUserTyping.length - 1] = currentWord;
 
-          // if we reach end of currently active word, we move to the last word
           if (currentWord.length === 0) {
-            setActiveWordIndex((i) => Math.max(i - 1, 0));
-            prevUserTyping.pop();
-            return [...prevUserTyping];
+            let prevWord = prevUserTyping[prevUserTyping.length - 2];
+            let actualPrevWord = lyricsByWord[prevUserTyping.length - 2];
+
+            if (
+              prevWord.length !== actualPrevWord.length ||
+              prevWord.join("") !== actualPrevWord
+            ) {
+              setActiveWordIndex((i) => Math.max(i - 1, 0));
+              prevUserTyping.pop();
+            }
+          } else {
+            currentWord.pop();
+            prevUserTyping[prevUserTyping.length - 1] = currentWord;
           }
 
           return [...prevUserTyping];
@@ -33,12 +43,29 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
 
         return prevUserTyping;
       });
+
+      // setCaretPosition((pos) => {
+      //   return {
+      //     ...pos,
+      //     x: Math.max(
+      //       pos.x - 8,
+      //       lyricsContainer.current.getBoundingClientRect().left
+      //     ),
+      //   };
+      // });
     }
 
     // space, move to next word
     if (keyCode === 32) {
       setUserTyping((prevUserTyping) => [...prevUserTyping, []]);
       setActiveWordIndex((i) => (i += 1));
+
+      // setCaretPosition((pos) => {
+      //   return {
+      //     ...pos,
+      //     x: pos.x + 8,
+      //   };
+      // });
     }
 
     if (keyCode >= 65 && keyCode <= 90) {
@@ -58,65 +85,123 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
   }, []);
 
   useEffect(() => {
-    let formattedLyrics = [];
-
-    if (profanityHidden) {
-      formattedLyrics = lyricsData.filteredLyrics
-        .replace("\n", "")
-        .replace(/\*/g, "")
-        .split(/\s+/);
-    } else {
-      formattedLyrics = lyricsData.lyrics.replace("\n", "").split(/\s+/);
-    }
-
-    setLyricsByWord(formattedLyrics);
-    setActiveWordIndex(0);
-    setUserTyping([]);
-
     window.addEventListener("keydown", handleUserKeyPress);
+
+    // Select the node that will be observed for mutations
+    const targetNode = lyricsContainer.current;
+
+    // Options for the observer (which mutations to observe)
+    const config = { attributes: true, childList: true, subtree: true };
+
+    // Callback function to execute when mutations are observed
+    const callback = function (mutationsList, observer) {
+      let lastChar = null;
+
+      for (let mutation of mutationsList) {
+        if (mutation.target.classList.contains("lastChar")) {
+          lastChar = mutation.target;
+          break;
+        }
+      }
+
+      if (lastChar) {
+        const pos = lastChar.getBoundingClientRect();
+        setCaretPosition({
+          x: pos.left + pos.width,
+          y: pos.top,
+        });
+      }
+
+      console.log(lastChar);
+      // if (mutationsList.length > 0) {
+      //   const elem = mutationsList[mutationsList.length - 1].target;
+      //   const pos = elem.getBoundingClientRect();
+
+      //   // console.log(elem.classList);
+      //   // console.log(mutationsList);
+
+      //   // setCaretPosition({
+      //   //   x: elem.classList.contains("opacity-100")
+      //   //     ? pos.left + pos.width
+      //   //     : pos.left,
+      //   //   y: pos.top,
+      //   // });
+
+      //   // caret.current = mutationsList[0].target;
+      // }
+    };
+
+    // Create an observer instance linked to the callback function
+    const observer = new MutationObserver(callback);
+
+    observer.observe(targetNode, config);
 
     return () => {
       window.removeEventListener("keydown", handleUserKeyPress);
+      observer.disconnect();
+      setUserTyping([]);
+      setCaretPosition({ x: 0, y: 0 });
     };
   }, [lyricsData, profanityHidden]);
 
   return (
-    <ul className="flex flex-wrap text-xl">
-      {lyricsByWord.map((word, wordIndex) => {
-        // we iterate through each word and show each character
-        return (
-          <div className="inline pr-2" key={wordIndex}>
-            {word.split("").map((char, charIndex) => {
-              return (
-                <span
-                  key={charIndex}
-                  className={`opacity-50 ${
-                    userTyping.length > 0 &&
-                    wordIndex <= activeWordIndex &&
-                    charIndex < userTyping[wordIndex].length
-                      ? userTyping[wordIndex][charIndex] === char
-                        ? "opacity-100" // if char is correct in word
-                        : "opacity-100 text-red-200" // if not
-                      : ""
-                  }`}
-                >
-                  {char}
-                </span>
-              );
-            })}
-            {
-              // display any additional characters the user types for a given word
-              userTyping[wordIndex] &&
-                userTyping[wordIndex].length > word.length && (
-                  <span className="opacity-100 text-red-200">
-                    {userTyping[wordIndex].slice(word.length)}
+    <div className="">
+      <ul className="flex flex-wrap text-xl" ref={lyricsContainer}>
+        {lyricsByWord.map((word, wordIndex) => {
+          // we iterate through each word and show each character
+          return (
+            <div
+              className={`inline pr-2 ${
+                wordIndex === activeWordIndex ? "active" : ""
+              }`}
+              key={wordIndex}
+            >
+              {word.split("").map((char, charIndex) => {
+                return (
+                  <span
+                    key={charIndex}
+                    className={`opacity-50 ${
+                      userTyping.length > 0 &&
+                      wordIndex <= activeWordIndex &&
+                      userTyping[wordIndex] &&
+                      charIndex < userTyping[wordIndex].length
+                        ? userTyping[wordIndex][charIndex] === char
+                          ? "opacity-100" // if char is correct in word
+                          : "opacity-100 text-red-200" // if not
+                        : ""
+                    } ${
+                      wordIndex === activeWordIndex &&
+                      userTyping[wordIndex] &&
+                      charIndex === userTyping[wordIndex].length - 1
+                        ? "lastChar"
+                        : ""
+                    }`}
+                  >
+                    {char}
                   </span>
-                )
-            }
-          </div>
-        );
-      })}
-    </ul>
+                );
+              })}
+              {
+                // display any additional characters the user types for a given word
+                userTyping[wordIndex] &&
+                  userTyping[wordIndex].length > word.length && (
+                    <span className="opacity-100 text-red-200">
+                      {userTyping[wordIndex].slice(word.length)}
+                    </span>
+                  )
+              }
+            </div>
+          );
+        })}
+      </ul>
+      <div
+        className={`w-1 h-5 mt-1 bg-gray-200 rounded-xl animate-pulse absolute`}
+        style={{
+          left: caretPosition.x,
+          top: caretPosition.y,
+        }}
+      ></div>
+    </div>
   );
 });
 
