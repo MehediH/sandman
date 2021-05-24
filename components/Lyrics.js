@@ -7,14 +7,25 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
   );
   const [userTyping, setUserTyping] = useState([]);
   const [activeWordIndex, setActiveWordIndex] = useState(0);
-  const lyricsContainer = useRef(null);
   const [caretPosition, setCaretPosition] = useState({ x: 0, y: 0 });
+  const [isTyping, setIsTyping] = useState(false);
+
+  const lyricsContainer = useRef(null);
+  const typingObserver = useRef(null);
+  const caretObserver = useRef(null);
 
   const handleUserKeyPress = useCallback((e) => {
     const { key, keyCode } = e;
 
     // don't track typing when the user is searching
     if (e.target.tagName === "INPUT" && e.target.type === "text") return;
+
+    // user is typing
+    setIsTyping(true);
+
+    caretObserver.current = setTimeout(() => {
+      setIsTyping(false);
+    }, 2000);
 
     // backspace, remove last char of last word
     if (keyCode === 8) {
@@ -25,6 +36,10 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
           if (currentWord.length === 0) {
             let prevWord = prevUserTyping[prevUserTyping.length - 2];
             let actualPrevWord = lyricsByWord[prevUserTyping.length - 2];
+
+            if (!prevWord) {
+              setActiveWordIndex((i) => Math.max(i - 1, 0));
+            }
 
             if (
               prevWord.length !== actualPrevWord.length ||
@@ -43,29 +58,12 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
 
         return prevUserTyping;
       });
-
-      // setCaretPosition((pos) => {
-      //   return {
-      //     ...pos,
-      //     x: Math.max(
-      //       pos.x - 8,
-      //       lyricsContainer.current.getBoundingClientRect().left
-      //     ),
-      //   };
-      // });
     }
 
     // space, move to next word
     if (keyCode === 32) {
       setUserTyping((prevUserTyping) => [...prevUserTyping, []]);
       setActiveWordIndex((i) => (i += 1));
-
-      // setCaretPosition((pos) => {
-      //   return {
-      //     ...pos,
-      //     x: pos.x + 8,
-      //   };
-      // });
     }
 
     if (keyCode >= 65 && keyCode <= 90) {
@@ -82,11 +80,13 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
         return [[key]]; // first char of first word
       });
     }
+
+    return () => {
+      clearTimeout(caretObserver.current);
+    };
   }, []);
 
-  useEffect(() => {
-    window.addEventListener("keydown", handleUserKeyPress);
-
+  const trackTyping = () => {
     // Select the node that will be observed for mutations
     const targetNode = lyricsContainer.current;
 
@@ -94,53 +94,84 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
     const config = { attributes: true, childList: true, subtree: true };
 
     // Callback function to execute when mutations are observed
-    const callback = function (mutationsList, observer) {
+    // So we can track typing and the last active char / word
+    const callback = function (mutationsList) {
       let lastChar = null;
+      let activeWord = null;
+      let isFirstWord = false;
 
       for (let mutation of mutationsList) {
-        if (mutation.target.classList.contains("lastChar")) {
+        if (
+          mutation.target.classList.contains("lastChar") &&
+          mutation.target.classList.contains("opacity-100")
+        ) {
           lastChar = mutation.target;
+          break;
+        }
+
+        if (
+          (!mutation.target.classList.contains("lastChar") &&
+            mutation.target.classList.contains("opacity-50")) ||
+          mutation.target.classList.contains("active")
+        ) {
+          const tempLastChar = mutation.target.querySelectorAll(
+            ".opacity-100:last-child"
+          )[0];
+
+          const tempFirstchar =
+            mutation.target.querySelectorAll(".opacity-50")[0];
+
+          if (tempFirstchar) {
+            activeWord = tempFirstchar;
+            isFirstWord = true;
+          } else if (tempLastChar) {
+            activeWord = tempLastChar;
+            isFirstWord = false;
+          } else if (mutation.target.classList.contains("opacity-50")) {
+            activeWord = mutation.target;
+            isFirstWord = true;
+          }
+
           break;
         }
       }
 
       if (lastChar) {
         const pos = lastChar.getBoundingClientRect();
+
         setCaretPosition({
           x: pos.left + pos.width,
           y: pos.top,
         });
+      } else if (activeWord) {
+        const pos = activeWord.getBoundingClientRect();
+
+        setCaretPosition({
+          x: isFirstWord ? pos.left : pos.left + pos.width,
+          y: pos.top,
+        });
       }
-
-      console.log(lastChar);
-      // if (mutationsList.length > 0) {
-      //   const elem = mutationsList[mutationsList.length - 1].target;
-      //   const pos = elem.getBoundingClientRect();
-
-      //   // console.log(elem.classList);
-      //   // console.log(mutationsList);
-
-      //   // setCaretPosition({
-      //   //   x: elem.classList.contains("opacity-100")
-      //   //     ? pos.left + pos.width
-      //   //     : pos.left,
-      //   //   y: pos.top,
-      //   // });
-
-      //   // caret.current = mutationsList[0].target;
-      // }
     };
 
-    // Create an observer instance linked to the callback function
     const observer = new MutationObserver(callback);
 
     observer.observe(targetNode, config);
 
+    return observer;
+  };
+
+  useEffect(() => {
+    setUserTyping([]);
+    setCaretPosition({ x: 0, y: 0 });
+
+    window.addEventListener("keydown", handleUserKeyPress);
+
+    typingObserver.current = trackTyping();
+
     return () => {
       window.removeEventListener("keydown", handleUserKeyPress);
-      observer.disconnect();
-      setUserTyping([]);
-      setCaretPosition({ x: 0, y: 0 });
+      typingObserver.current.disconnect();
+      typingObserver.current = null;
     };
   }, [lyricsData, profanityHidden]);
 
@@ -151,7 +182,7 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
           // we iterate through each word and show each character
           return (
             <div
-              className={`inline pr-2 ${
+              className={`inline mr-1.5 ${
                 wordIndex === activeWordIndex ? "active" : ""
               }`}
               key={wordIndex}
@@ -160,7 +191,7 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
                 return (
                   <span
                     key={charIndex}
-                    className={`opacity-50 ${
+                    className={`${
                       userTyping.length > 0 &&
                       wordIndex <= activeWordIndex &&
                       userTyping[wordIndex] &&
@@ -168,7 +199,7 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
                         ? userTyping[wordIndex][charIndex] === char
                           ? "opacity-100" // if char is correct in word
                           : "opacity-100 text-red-200" // if not
-                        : ""
+                        : "opacity-50"
                     } ${
                       wordIndex === activeWordIndex &&
                       userTyping[wordIndex] &&
@@ -185,7 +216,11 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
                 // display any additional characters the user types for a given word
                 userTyping[wordIndex] &&
                   userTyping[wordIndex].length > word.length && (
-                    <span className="opacity-100 text-red-200">
+                    <span
+                      className={`opacity-100 text-red-200 ${
+                        wordIndex === activeWordIndex ? "lastChar" : ""
+                      }`}
+                    >
                       {userTyping[wordIndex].slice(word.length)}
                     </span>
                   )
@@ -195,10 +230,13 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
         })}
       </ul>
       <div
-        className={`w-1 h-5 mt-1 bg-gray-200 rounded-xl animate-pulse absolute`}
+        className={` w-1 h-5 mt-1.5 bg-gray-200 rounded-xl absolute ${
+          !isTyping ? "animate-pulse" : ""
+        }`}
         style={{
           left: caretPosition.x,
           top: caretPosition.y,
+          transition: "left 0.1s linear",
         }}
       ></div>
     </div>
