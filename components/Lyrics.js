@@ -1,10 +1,17 @@
 import { useEffect, useState, useCallback, memo, useRef } from "react";
 
 // lyricsData is an Object with `lyrics` and `filteredLyrics`
-const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
+const Lyrics = memo(function Lyrics({
+  lyricsData,
+  activeBlock,
+  profanityHidden,
+}) {
   const [lyricsByWord, setLyricsByWord] = useState(
-    profanityHidden ? lyricsData.filteredLyrics : lyricsData.lyrics
+    profanityHidden
+      ? lyricsData.filteredLyrics[activeBlock]
+      : lyricsData.lyrics[activeBlock]
   );
+
   const [userTyping, setUserTyping] = useState([]);
   const [activeWordIndex, setActiveWordIndex] = useState(0);
   const [caretPosition, setCaretPosition] = useState({ x: 0, y: 0 });
@@ -39,9 +46,7 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
 
             if (!prevWord) {
               setActiveWordIndex((i) => Math.max(i - 1, 0));
-            }
-
-            if (
+            } else if (
               prevWord.length !== actualPrevWord.length ||
               prevWord.join("") !== actualPrevWord
             ) {
@@ -87,6 +92,8 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
   }, []);
 
   const trackTyping = () => {
+    if (!lyricsContainer.current) return;
+
     // Select the node that will be observed for mutations
     const targetNode = lyricsContainer.current;
 
@@ -170,10 +177,15 @@ const Lyrics = memo(function Lyrics({ lyricsData, profanityHidden }) {
 
     return () => {
       window.removeEventListener("keydown", handleUserKeyPress);
-      typingObserver.current.disconnect();
-      typingObserver.current = null;
+
+      if (typingObserver.current) {
+        typingObserver.current.disconnect();
+        typingObserver.current = null;
+      }
     };
-  }, [lyricsData, profanityHidden]);
+  }, [lyricsData, activeBlock, profanityHidden]);
+
+  return null;
 
   return (
     <div className="">

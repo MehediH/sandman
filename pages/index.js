@@ -5,13 +5,14 @@ import Search from "../components/search";
 import Song from "../components/Song";
 import { getLyricsFromGenius } from "./api/getLyrics";
 import { searchSongsOnGenius } from "./api/searchSongs";
-import { cleanLyrics } from "../lib/utils";
+import { cleanLyrics, cleanLyricsIntoArray } from "../lib/utils";
 import LyricsPlaceholder from "../components/LyricsPlaceholder";
 
 export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
   const [profanityHidden, setProfanityHidden] = useState(true);
   const [lyrics, setLyrics] = useState(defaultSongLyrics);
   const [lyricsLoading, setLyricsLoading] = useState(false);
+  const [activeBlock, setActiveBlock] = useState(0);
 
   const [song, setSong] = useState(defaultSongMetadata);
 
@@ -65,7 +66,11 @@ export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
         </label>
 
         {!lyricsLoading ? (
-          <Lyrics lyricsData={lyrics} profanityHidden={profanityHidden} />
+          <Lyrics
+            lyricsData={lyrics}
+            activeBlock={activeBlock}
+            profanityHidden={profanityHidden}
+          />
         ) : (
           <LyricsPlaceholder />
         )}
@@ -95,7 +100,7 @@ export async function getStaticProps(context) {
     };
   }
 
-  const { lyrics, filteredLyrics } = cleanLyrics(defaultSongLyrics);
+  const { lyrics, filteredLyrics } = cleanLyricsIntoArray(defaultSongLyrics);
 
   return {
     props: {
