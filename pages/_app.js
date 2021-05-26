@@ -1,12 +1,12 @@
-import 'tailwindcss/tailwind.css'
-import {Provider} from 'next-auth/client'
+import "../styles/global.css";
+import { Provider } from "next-auth/client";
 
 function MyApp({ Component, pageProps }) {
-  return (
-    <Provider session={pageProps.session} options={{clientMaxAge: 3600}}>
-      <Component {...pageProps} />
-    </Provider>
-  ) 
+	return (
+		<Provider session={pageProps.session} options={{ clientMaxAge: 3600 }}>
+			<Component {...pageProps} />
+		</Provider>
+	);
 }
 
-export default MyApp
+export default MyApp;
