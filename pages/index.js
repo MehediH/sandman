@@ -28,25 +28,39 @@ export default function Home({
 	const [uri, setUri] = useState("");
 
 	const [song, setSong] = useState(defaultSongMetadata);
-
+	const [err, setErr] = useState(lyricsTransformErr);
+	//
 	useEffect(() => {
 		startPlayer();
 	}, []);
 
 	const handleSongChange = async (song) => {
+		setErr(null);
 		setSong(song);
 		setLyricsLoading(true);
 
 		const songName = song.title.split("by")[0];
 		const artistName = song.title.split("by")[1].substr(1);
 
-		const lyrics = await fetch(
+		const lyricsData = await fetch(
 			`./api/getLyrics?songName=${songName}&artistName=${artistName}`
 		).then((res) => res.text());
 
-		if (!lyrics) return;
+		if (!lyricsData) return;
 
-		setLyrics(cleanLyrics(lyrics));
+		const {
+			lyrics,
+			filteredLyrics,
+			err: lyricsTransformErr,
+		} = cleanLyricsIntoArray(lyricsData);
+
+		if (lyricsTransformErr) {
+			setLyricsLoading(false);
+			setErr(lyricsTransformErr);
+			return;
+		}
+
+		setLyrics({ lyrics, filteredLyrics });
 		setLyricsLoading(false);
 	};
 
@@ -119,10 +133,12 @@ export default function Home({
 						</div>
 					)}
 				</div>
-
-				{lyricsTransformErr ? (
+				{err ? (
 					<p className="my-20">
 						This song is not supported yet. Please try a different one.
+						<code className="block text-sm my-2 opacity-70">
+							Error message: {err}
+						</code>
 					</p>
 				) : (
 					<>
