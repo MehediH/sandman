@@ -8,6 +8,7 @@ import { getLyricsFromGenius } from "./api/getLyrics";
 import { searchSongsOnGenius } from "./api/searchSongs";
 import { cleanLyrics, cleanLyricsIntoArray } from "../lib/utils";
 import LyricsPlaceholder from "../components/LyricsPlaceholder";
+import PlaybackControl from "../components/PlaybackControl";
 
 import { getSession, signIn, signOut, useSession } from "next-auth/client";
 import { initPlayer, takeOver, loadSDK } from "../lib/initPlayer";
