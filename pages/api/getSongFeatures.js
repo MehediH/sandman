@@ -1,10 +1,10 @@
-export const audioFeaturesFromSpotify = async ( id ) => {
+export const audioFeaturesFromSpotify = async ( id, bearer ) => {
 	try{
 		const data = await fetch(
             `https://api.spotify.com/v1/audio-features/${id}`, 
             {
                 headers: {
-                    'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SPOTIFY_BEARER}`
+                    'Authorization': `Bearer ${bearer}`
                 }
             }
         ).then(res => res.json());
@@ -22,7 +22,7 @@ export default async function spotifySearchEndpoint(req, res) {
 
     if(!id) return res.status(400).send("'id' parameter is missing for the request.");
 
-	const { data, err } = await audioFeaturesFromSpotify(id);
+	const { data, err } = await audioFeaturesFromSpotify(id, bearer);
 
     if(err){
         return res.status(400).send({ err: err });
