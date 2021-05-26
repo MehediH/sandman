@@ -9,7 +9,8 @@ import { searchSongsOnGenius } from "./api/searchSongs";
 import { cleanLyrics, cleanLyricsIntoArray } from "../lib/utils";
 import LyricsPlaceholder from "../components/LyricsPlaceholder";
 
-import { signIn, signOut, useSession } from "next-auth/client";
+import { getSession, signIn, signOut, useSession } from "next-auth/client";
+import { initPlayer, takeOver, loadSDK } from "../lib/initPlayer";
 
 export default function Home({
 	defaultSongLyrics,
@@ -22,8 +23,13 @@ export default function Home({
 	const [lyrics, setLyrics] = useState(defaultSongLyrics);
 	const [lyricsLoading, setLyricsLoading] = useState(false);
 	const [activeBlock, setActiveBlock] = useState(1);
+	const [playing, setPlaying] = useState("");
 
 	const [song, setSong] = useState(defaultSongMetadata);
+
+	useEffect(() => {
+		startPlayer();
+	}, []);
 
 	const handleSongChange = async (song) => {
 		setSong(song);
@@ -41,6 +47,33 @@ export default function Home({
 		setLyrics(cleanLyrics(lyrics));
 		setLyricsLoading(false);
 	};
+
+	const startPlayer = (setupOnCall = false) => {
+		getSession().then(async (session) => {
+			if (!session) return;
+			initPlayer(
+				session.user.access_token,
+				updatePlaying,
+				stoppedPlaying,
+				setupOnCall
+			);
+			if (!setupOnCall) {
+				loadSDK();
+			}
+		});
+	};
+
+	const updatePlaying = (state, setupOnCall) => {
+		setPlaying(state);
+		if (setupOnCall) {
+			takeOver(session.user.access_token, state.deviceId);
+		}
+	};
+
+	const stoppedPlaying = () => {
+		setPlaying({ deviceSwitched: true });
+	};
+
 	return (
 		<div className="bg-gradient-to-b from-purple-600 via-purple-400 to-purple-300 text-white min-h-screen">
 			<Head>
@@ -54,14 +87,6 @@ export default function Home({
 						<a className="text-5xl select-none mr-5">🎧</a>
 					</Link>
 					<Search selectSong={handleSongChange} />
-					{!session && (
-						<button
-							className="ml-auto font-bold hover:underline"
-							onClick={() => signIn("spotify")}
-						>
-							Sign in with Spotify
-						</button>
-					)}
 
 					{!session && (
 						<button
@@ -80,7 +105,7 @@ export default function Home({
 								Sign out
 							</button>
 							<img
-								className="w-14 h-14 rounded-full select-none pointer-events-none inline-block"
+								className="w-10 h-10 rounded-full select-none pointer-events-none inline-block"
 								src={session?.user?.picture}
 								draggable={false}
 							></img>
