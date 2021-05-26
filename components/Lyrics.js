@@ -17,7 +17,7 @@ const Lyrics = memo(function Lyrics({
 
   const [userTyping, setUserTyping] = useState([[]]);
   const [activeWordIndex, setActiveWordIndex] = useState(0);
-  const [caretPosition, setCaretPosition] = useState({ x: 0, y: 0 });
+  const [caretPosition, setCaretPosition] = useState();
   const [isTyping, setIsTyping] = useState(false);
 
   const lyricsContainer = useRef(null);
@@ -64,10 +64,11 @@ const Lyrics = memo(function Lyrics({
 
           return [...prevUserTyping];
         } else {
+          prevUserTyping.pop();
           setActiveWordIndex((i) => Math.max(i - 1, 0));
         }
 
-        return prevUserTyping;
+        return [...prevUserTyping];
       });
     }
 
@@ -197,11 +198,6 @@ const Lyrics = memo(function Lyrics({
 
     setUserTyping([[]]);
 
-    if (lyricsContainer.current) {
-      const lyricsPos = lyricsContainer.current.getBoundingClientRect();
-      setCaretPosition({ x: lyricsPos.x, y: lyricsPos.y });
-    }
-
     return () => {
       window.removeEventListener("keydown", handleUserKeyPress);
 
@@ -215,7 +211,9 @@ const Lyrics = memo(function Lyrics({
   return (
     <div className="text-xl">
       {lyricsData && lyricsData.filteredLyrics && (
-        <span className="block my-5">{lyricsData.filteredLyrics[0].block}</span>
+        <span className="block my-5">
+          {lyricsData.filteredLyrics[activeBlock].block}
+        </span>
       )}
       <ul className="flex flex-wrap" ref={lyricsContainer}>
         {lyricsByWord.map((word, wordIndex) => {
@@ -239,6 +237,7 @@ const Lyrics = memo(function Lyrics({
                     <span
                       key={charIndex}
                       className={`${
+                        userTyping &&
                         userTyping.length > 0 &&
                         wordIndex <= activeWordIndex &&
                         userTyping[wordIndex] &&
@@ -277,16 +276,18 @@ const Lyrics = memo(function Lyrics({
           );
         })}
       </ul>
-      <div
-        className={` w-1 h-5 mt-1.5 bg-gray-200 rounded-xl absolute ${
-          !isTyping ? "animate-pulse" : ""
-        }`}
-        style={{
-          left: caretPosition.x,
-          top: caretPosition.y,
-          transition: "left 0.1s linear, top 0.1s linear",
-        }}
-      ></div>
+      {caretPosition && (
+        <div
+          className={` w-1 h-5 mt-1.5 bg-gray-200 rounded-xl absolute ${
+            !isTyping ? "animate-pulse" : ""
+          }`}
+          style={{
+            left: caretPosition.x,
+            top: caretPosition.y,
+            transition: "left 0.1s linear, top 0.1s linear",
+          }}
+        ></div>
+      )}
     </div>
   );
 });
