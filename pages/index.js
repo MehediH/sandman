@@ -9,8 +9,7 @@ import { searchSongsOnGenius } from "./api/searchSongs";
 import { cleanLyrics, cleanLyricsIntoArray } from "../lib/utils";
 import LyricsPlaceholder from "../components/LyricsPlaceholder";
 
-import { getSession, signIn, signOut, useSession } from "next-auth/client";
-import { audioFeaturesFromSpotify } from "./api/getSongFeatures";
+import { signIn, signOut, useSession } from "next-auth/client";
 
 export default function Home({
   defaultSongLyrics,
@@ -134,11 +133,6 @@ export async function getStaticProps(context) {
     defaultSongArtist
   );
 
-  const { data: audioFeatures } = await audioFeaturesFromSpotify(
-    // defaultSongName , ID???
-    getSession()
-  );
-
   if (err) {
     return {
       props: {
@@ -159,7 +153,6 @@ export async function getStaticProps(context) {
     props: {
       defaultSongLyrics: { lyrics, filteredLyrics },
       defaultSongMetadata: Object.values(songMetadata)[0],
-      audioFeatures: audioFeatures,
     },
   };
 }
