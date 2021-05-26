@@ -1,5 +1,5 @@
 import Head from "next/head";
-import Link from "next/link"
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import Lyrics from "../components/Lyrics";
 import Search from "../components/search";
@@ -9,11 +9,11 @@ import { searchSongsOnGenius } from "./api/searchSongs";
 import { cleanLyrics, cleanLyricsIntoArray } from "../lib/utils";
 import LyricsPlaceholder from "../components/LyricsPlaceholder";
 
-import {getSession, signIn, signOut, useSession} from 'next-auth/client'
+import { getSession, signIn, signOut, useSession } from "next-auth/client";
 import { audioFeaturesFromSpotify } from "./api/getSongFeatures";
 
 export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
-  const [session, loading] = useSession()
+  const [session, loading] = useSession();
 
   const [profanityHidden, setProfanityHidden] = useState(true);
   const [lyrics, setLyrics] = useState(defaultSongLyrics);
@@ -47,13 +47,33 @@ export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
 
       <div className="py-20 max-w-screen-2xl m-auto flex flex-col">
         <div className="flex items-center">
-          <Link href="/"><h1 className="text-5xl select-none mr-5">🎧</h1></Link>
+          <Link href="/">
+            <a className="text-5xl select-none mr-5">🎧</a>
+          </Link>
           <Search selectSong={handleSongChange} />
-          {!session && <button className="ml-auto font-bold hover:underline" onClick={() => signIn("spotify")}>Sign in with Spotify</button>}
-          {session && <div className="ml-auto flex-row-reverse flex">
-            <button className="font-bold ml-5 hover:underline" onClick={() => signOut()}>Sign out</button>
-            <img className="w-14 h-14 rounded-full" src={session?.user?.picture}></img>
-            </div>}
+          {!session && (
+            <button
+              className="ml-auto font-bold hover:underline"
+              onClick={() => signIn("spotify")}
+            >
+              Sign in with Spotify
+            </button>
+          )}
+          {session && (
+            <div className="ml-auto flex-row-reverse flex">
+              <button
+                className="font-bold ml-5 hover:underline"
+                onClick={() => signOut()}
+              >
+                Sign out
+              </button>
+              <img
+                className="w-14 h-14 rounded-full select-none pointer-events-none inline-block"
+                src={session?.user?.picture}
+                draggable={false}
+              ></img>
+            </div>
+          )}
         </div>
 
         <Song data={song} currentlyPlaying={true} />
@@ -121,7 +141,7 @@ export async function getStaticProps(context) {
     props: {
       defaultSongLyrics: { lyrics, filteredLyrics },
       defaultSongMetadata: Object.values(songMetadata)[0],
-      audioFeatures: audioFeatures
+      audioFeatures: audioFeatures,
     },
   };
 }
