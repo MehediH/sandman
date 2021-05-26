@@ -57,8 +57,6 @@ const Lyrics = memo(function Lyrics({
             currentWord.pop();
             prevUserTyping[prevUserTyping.length - 1] = currentWord;
           }
-
-          return [...prevUserTyping];
         } else {
           prevUserTyping.pop();
         }
@@ -101,74 +99,31 @@ const Lyrics = memo(function Lyrics({
     // Select the node that will be observed for mutations
     const targetNode = lyricsContainer.current;
 
-    // Options for the observer (which mutations to observe)
-    const config = { attributes: true, childList: true, subtree: true };
+    const observer = new MutationObserver(moveCursor);
 
-    // Callback function to execute when mutations are observed
-    // So we can track typing and the last active char / word
-    const callback = function (mutationsList) {
-      let lastChar = null;
-      let activeWord = null;
-      let isFirstWord = false;
-
-      for (let mutation of mutationsList) {
-        if (
-          mutation.target.classList.contains("lastChar") &&
-          mutation.target.classList.contains("opacity-100")
-        ) {
-          lastChar = mutation.target;
-          break;
-        }
-
-        if (
-          (!mutation.target.classList.contains("lastChar") &&
-            mutation.target.classList.contains("opacity-50")) ||
-          mutation.target.classList.contains("active")
-        ) {
-          const tempLastChar = mutation.target.querySelectorAll(
-            ".opacity-100:last-child"
-          )[0];
-
-          const tempFirstchar =
-            mutation.target.querySelectorAll(".opacity-50")[0];
-
-          if (tempFirstchar) {
-            activeWord = tempFirstchar;
-            isFirstWord = true;
-          } else if (tempLastChar) {
-            activeWord = tempLastChar;
-            isFirstWord = false;
-          } else if (mutation.target.classList.contains("opacity-50")) {
-            activeWord = mutation.target;
-            isFirstWord = true;
-          }
-
-          break;
-        }
-      }
-
-      if (lastChar) {
-        const pos = lastChar.getBoundingClientRect();
-
-        setCaretPosition({
-          x: pos.left + pos.width,
-          y: pos.top,
-        });
-      } else if (activeWord) {
-        const pos = activeWord.getBoundingClientRect();
-
-        setCaretPosition({
-          x: isFirstWord ? pos.left : pos.left + pos.width,
-          y: pos.top,
-        });
-      }
-    };
-
-    const observer = new MutationObserver(callback);
-
-    observer.observe(targetNode, config);
+    observer.observe(targetNode, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
 
     return observer;
+  };
+
+  const moveCursor = () => {
+    if (!lyricsContainer.current) return;
+
+    const activeElem = lyricsContainer.current.querySelectorAll(".active")[0];
+    const lastChar = lyricsContainer.current.querySelectorAll(".lastChar")[0];
+
+    let pos =
+      lastChar?.getBoundingClientRect() || activeElem?.getBoundingClientRect();
+
+    if (lastChar) {
+      setCaretPosition({ x: pos.x + pos.width, y: pos.y });
+    } else if (activeElem) {
+      setCaretPosition({ x: pos.x, y: pos.y });
+    }
   };
 
   useEffect(() => {
@@ -187,6 +142,7 @@ const Lyrics = memo(function Lyrics({
     );
 
     window.addEventListener("keydown", handleUserKeyPress);
+    window.addEventListener("resize", moveCursor);
 
     typingObserver.current = trackTyping();
 
@@ -194,6 +150,7 @@ const Lyrics = memo(function Lyrics({
 
     return () => {
       window.removeEventListener("keydown", handleUserKeyPress);
+      window.removeEventListener("resize", moveCursor);
 
       if (typingObserver.current) {
         typingObserver.current.disconnect();
@@ -218,9 +175,7 @@ const Lyrics = memo(function Lyrics({
                 <div
                   style={{ flexBasis: "100%", flexShrink: 0, flexGrow: 0 }}
                 />
-              ) : (
-                ""
-              )}
+              ) : null}
               <div
                 className={`inline mr-1.5 ${
                   wordIndex === userTyping.length - 1 ? "active" : ""
@@ -231,19 +186,16 @@ const Lyrics = memo(function Lyrics({
                     <span
                       key={charIndex}
                       className={`${
-                        userTyping &&
-                        userTyping.length > 0 &&
+                        userTyping?.length > 0 &&
                         wordIndex <= userTyping.length - 1 &&
-                        userTyping[wordIndex] &&
-                        charIndex < userTyping[wordIndex].length
+                        charIndex < userTyping[wordIndex]?.length
                           ? userTyping[wordIndex][charIndex] === char
                             ? "opacity-100" // if char is correct in word
                             : "opacity-100 text-red-200" // if not
                           : "opacity-50"
                       } ${
                         wordIndex === userTyping.length - 1 &&
-                        userTyping[wordIndex] &&
-                        charIndex === userTyping[wordIndex].length - 1
+                        charIndex === userTyping[wordIndex]?.length - 1
                           ? "lastChar"
                           : ""
                       }`}
@@ -254,16 +206,15 @@ const Lyrics = memo(function Lyrics({
                 })}
                 {
                   // display any additional characters the user types for a given word
-                  userTyping[wordIndex] &&
-                    userTyping[wordIndex].length > word.length && (
-                      <span
-                        className={`opacity-100 text-red-200 ${
-                          wordIndex === userTyping.length - 1 ? "lastChar" : ""
-                        }`}
-                      >
-                        {userTyping[wordIndex].slice(word.length)}
-                      </span>
-                    )
+                  userTyping[wordIndex]?.length > word.length && (
+                    <span
+                      className={`opacity-100 text-red-200 ${
+                        wordIndex === userTyping.length - 1 ? "lastChar" : ""
+                      }`}
+                    >
+                      {userTyping[wordIndex].slice(word.length)}
+                    </span>
+                  )
                 }
               </div>
             </React.Fragment>
