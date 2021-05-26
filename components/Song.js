@@ -1,7 +1,7 @@
 import { getSession } from "next-auth/client";
 import { useEffect, useState } from "react";
 
-export default function Song({ data, currentlyPlaying = false }) {
+export default function Song({ data, currentlyPlaying = false, setUri }) {
 	const [songData, setSongData] = useState();
 	const [songFeatures, setSongFeatures] = useState({});
 
@@ -31,6 +31,7 @@ export default function Song({ data, currentlyPlaying = false }) {
 				if (err) return;
 
 				setSongFeatures(songFeatures);
+				setUri(songFeatures.uri);
 			}
 		};
 
