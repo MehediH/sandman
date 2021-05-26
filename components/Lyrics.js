@@ -7,23 +7,20 @@ const Lyrics = memo(function Lyrics({
   activeBlock,
   profanityHidden,
 }) {
-  const [lyricsByWord, setLyricsByWord] = useState(
-    profanityHidden
-      ? lyricsToWords(lyricsData.lyrics[activeBlock].text)
-      : lyricsToWords(lyricsData.filteredLyrics[activeBlock].text)
-  );
+  const [lyricsByWord, setLyricsByWord] = useState([]);
 
   const [lineBreaks, setLineBreaks] = useState([]);
 
   const [userTyping, setUserTyping] = useState([[]]);
   const [caretPosition, setCaretPosition] = useState();
+  const [cursorShake, setCursorShake] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
 
   const lyricsContainer = useRef(null);
   const typingObserver = useRef(null);
   const caretObserver = useRef(null);
 
-  const handleUserKeyPress = useCallback((e) => {
+  const handleUserKeyPress = useCallback((e, lyricsByWord) => {
     const { key, keyCode } = e;
 
     // don't track typing when the user is searching
@@ -36,6 +33,10 @@ const Lyrics = memo(function Lyrics({
       setIsTyping(false);
     }, 2000);
 
+    let typingShakeTimeout;
+
+    console.log("hi");
+
     // backspace, remove last char of last word
     if (keyCode === 8) {
       setUserTyping((prevUserTyping) => {
@@ -47,18 +48,27 @@ const Lyrics = memo(function Lyrics({
             let actualPrevWord = lyricsByWord[prevUserTyping.length - 2];
 
             if (
-              !prevWord ||
-              prevWord.length !== actualPrevWord.length ||
-              prevWord.join("") !== actualPrevWord
+              (!prevWord ||
+                prevWord.length !== actualPrevWord.length ||
+                prevWord.join("") !== actualPrevWord) &&
+              prevUserTyping.length !== 1
             ) {
               prevUserTyping.pop();
+            } else {
+              setCursorShake(true);
+              typingShakeTimeout = setTimeout(() => {
+                setCursorShake(false);
+              }, 800);
             }
           } else {
             currentWord.pop();
+
+            if (prevUserTyping.length === 1 && currentWord.length === 0) {
+              currentWord = [];
+            }
+
             prevUserTyping[prevUserTyping.length - 1] = currentWord;
           }
-        } else {
-          prevUserTyping.pop();
         }
 
         return [...prevUserTyping];
@@ -90,8 +100,9 @@ const Lyrics = memo(function Lyrics({
 
     return () => {
       clearTimeout(caretObserver.current);
+      clearTimeout(typingShakeTimeout);
     };
-  }, []);
+  });
 
   const trackTyping = () => {
     if (!lyricsContainer.current) return;
@@ -127,6 +138,12 @@ const Lyrics = memo(function Lyrics({
   };
 
   useEffect(() => {
+    const lyricsByWord = profanityHidden
+      ? lyricsToWords(lyricsData.filteredLyrics[activeBlock].text)
+      : lyricsToWords(lyricsData.lyrics[activeBlock].text);
+
+    setLyricsByWord(lyricsByWord);
+
     const l = lyricsData.filteredLyrics[activeBlock].text
       .split("\n")
       .filter((l) => l != "")
@@ -141,7 +158,10 @@ const Lyrics = memo(function Lyrics({
         .filter((l) => l !== null)
     );
 
-    window.addEventListener("keydown", handleUserKeyPress);
+    const proxyKeyPress = (e) => handleUserKeyPress(e, lyricsByWord);
+
+    window.addEventListener("keydown", proxyKeyPress);
+
     window.addEventListener("resize", moveCursor);
 
     typingObserver.current = trackTyping();
@@ -149,7 +169,7 @@ const Lyrics = memo(function Lyrics({
     setUserTyping([[]]);
 
     return () => {
-      window.removeEventListener("keydown", handleUserKeyPress);
+      window.removeEventListener("keydown", proxyKeyPress);
       window.removeEventListener("resize", moveCursor);
 
       if (typingObserver.current) {
@@ -225,7 +245,7 @@ const Lyrics = memo(function Lyrics({
         <div
           className={` w-1 h-5 mt-1.5 bg-gray-200 rounded-xl absolute ${
             !isTyping ? "animate-pulse" : ""
-          }`}
+          } ${cursorShake ? "animate-shake" : ""}`}
           style={{
             left: caretPosition.x,
             top: caretPosition.y,

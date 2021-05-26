@@ -155,8 +155,8 @@ export default function Home({
 }
 
 export async function getStaticProps(context) {
-	const defaultSongName = "SICKO MODE",
-		defaultSongArtist = "Travis Scott";
+	const defaultSongName = "durag activity",
+		defaultSongArtist = "baby keem";
 
 	const { data: defaultSongLyrics, err } = await getLyricsFromGenius(
 		defaultSongName,
