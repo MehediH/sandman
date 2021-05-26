@@ -12,13 +12,17 @@ import LyricsPlaceholder from "../components/LyricsPlaceholder";
 import { getSession, signIn, signOut, useSession } from "next-auth/client";
 import { audioFeaturesFromSpotify } from "./api/getSongFeatures";
 
-export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
+export default function Home({
+  defaultSongLyrics,
+  defaultSongMetadata,
+  lyricsTransformErr,
+}) {
   const [session, loading] = useSession();
 
   const [profanityHidden, setProfanityHidden] = useState(true);
   const [lyrics, setLyrics] = useState(defaultSongLyrics);
   const [lyricsLoading, setLyricsLoading] = useState(false);
-  const [activeBlock, setActiveBlock] = useState(0);
+  const [activeBlock, setActiveBlock] = useState(1);
 
   const [song, setSong] = useState(defaultSongMetadata);
 
@@ -76,33 +80,41 @@ export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
           )}
         </div>
 
-        <Song data={song} currentlyPlaying={true} />
-
-        <label
-          htmlFor="hideProfanity"
-          className="opacity-70 hover:opacity-100 transition-all cursor-pointer"
-        >
-          <input
-            tabIndex="0"
-            type="checkbox"
-            id="hideProfanity"
-            className="rounded-sm mr-2"
-            onChange={() => {
-              setProfanityHidden((h) => !h);
-            }}
-            checked={profanityHidden}
-          />
-          <span>Filter profanity</span>
-        </label>
-
-        {!lyricsLoading ? (
-          <Lyrics
-            lyricsData={lyrics}
-            activeBlock={activeBlock}
-            profanityHidden={profanityHidden}
-          />
+        {lyricsTransformErr ? (
+          <p className="my-20">
+            This song is not supported yet. Please try a different one.
+          </p>
         ) : (
-          <LyricsPlaceholder />
+          <>
+            <Song data={song} currentlyPlaying={true} />
+
+            <label
+              htmlFor="hideProfanity"
+              className="opacity-70 hover:opacity-100 transition-all cursor-pointer"
+            >
+              <input
+                tabIndex="0"
+                type="checkbox"
+                id="hideProfanity"
+                className="rounded-sm mr-2"
+                onChange={() => {
+                  setProfanityHidden((h) => !h);
+                }}
+                checked={profanityHidden}
+              />
+              <span>Filter profanity</span>
+            </label>
+
+            {!lyricsLoading ? (
+              <Lyrics
+                lyricsData={lyrics}
+                activeBlock={activeBlock}
+                profanityHidden={profanityHidden}
+              />
+            ) : (
+              <LyricsPlaceholder />
+            )}
+          </>
         )}
       </div>
     </div>
@@ -110,8 +122,8 @@ export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
 }
 
 export async function getStaticProps(context) {
-  const defaultSongName = "$andman",
-    defaultSongArtist = "ASAP Rocky";
+  const defaultSongName = "SICKO MODE",
+    defaultSongArtist = "Travis Scott";
 
   const { data: defaultSongLyrics, err } = await getLyricsFromGenius(
     defaultSongName,
@@ -135,7 +147,13 @@ export async function getStaticProps(context) {
     };
   }
 
-  const { lyrics, filteredLyrics } = cleanLyricsIntoArray(defaultSongLyrics);
+  const {
+    lyrics,
+    filteredLyrics,
+    err: lyricsTransformErr,
+  } = cleanLyricsIntoArray(defaultSongLyrics);
+
+  if (lyricsTransformErr) return { props: { lyricsTransformErr } };
 
   return {
     props: {
