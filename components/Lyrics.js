@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback, memo, useRef } from "react";
+import React, { useEffect, useState, useCallback, memo, useRef } from "react";
+import { lyricsToWords } from "../lib/utils";
 
 // lyricsData is an Object with `lyrics` and `filteredLyrics`
 const Lyrics = memo(function Lyrics({
@@ -8,11 +9,13 @@ const Lyrics = memo(function Lyrics({
 }) {
   const [lyricsByWord, setLyricsByWord] = useState(
     profanityHidden
-      ? lyricsData.filteredLyrics[activeBlock]
-      : lyricsData.lyrics[activeBlock]
+      ? lyricsToWords(lyricsData.lyrics[activeBlock].text)
+      : lyricsToWords(lyricsData.filteredLyrics[activeBlock].text)
   );
 
-  const [userTyping, setUserTyping] = useState([]);
+  const [lineBreaks, setLineBreaks] = useState([]);
+
+  const [userTyping, setUserTyping] = useState([[]]);
   const [activeWordIndex, setActiveWordIndex] = useState(0);
   const [caretPosition, setCaretPosition] = useState({ x: 0, y: 0 });
   const [isTyping, setIsTyping] = useState(false);
@@ -45,6 +48,7 @@ const Lyrics = memo(function Lyrics({
             let actualPrevWord = lyricsByWord[prevUserTyping.length - 2];
 
             if (!prevWord) {
+              prevUserTyping.pop();
               setActiveWordIndex((i) => Math.max(i - 1, 0));
             } else if (
               prevWord.length !== actualPrevWord.length ||
@@ -59,6 +63,8 @@ const Lyrics = memo(function Lyrics({
           }
 
           return [...prevUserTyping];
+        } else {
+          setActiveWordIndex((i) => Math.max(i - 1, 0));
         }
 
         return prevUserTyping;
@@ -67,8 +73,13 @@ const Lyrics = memo(function Lyrics({
 
     // space, move to next word
     if (keyCode === 32) {
-      setUserTyping((prevUserTyping) => [...prevUserTyping, []]);
-      setActiveWordIndex((i) => (i += 1));
+      setUserTyping((prevUserTyping) => {
+        if (prevUserTyping.length === lyricsByWord.length)
+          return [...prevUserTyping];
+
+        return [...prevUserTyping, []];
+      });
+      setActiveWordIndex((i) => Math.min(lyricsByWord.length - 1, i + 1));
     }
 
     if (keyCode >= 65 && keyCode <= 90) {
@@ -81,8 +92,6 @@ const Lyrics = memo(function Lyrics({
           prevUserTyping[prevUserTyping.length - 1] = currentWord;
           return [...prevUserTyping];
         }
-
-        return [[key]]; // first char of first word
       });
     }
 
@@ -168,12 +177,30 @@ const Lyrics = memo(function Lyrics({
   };
 
   useEffect(() => {
-    setUserTyping([]);
-    setCaretPosition({ x: 0, y: 0 });
+    const l = lyricsData.filteredLyrics[activeBlock].text
+      .split("\n")
+      .filter((l) => l != "")
+      .map((l) => l.split(" "));
+
+    setLineBreaks(
+      []
+        .concat(...l.map((n) => [n, "\n"]))
+        .slice(0, -1)
+        .flat()
+        .map((l, i) => (l === "\n" ? i : null))
+        .filter((l) => l !== null)
+    );
 
     window.addEventListener("keydown", handleUserKeyPress);
 
     typingObserver.current = trackTyping();
+
+    setUserTyping([[]]);
+
+    if (lyricsContainer.current) {
+      const lyricsPos = lyricsContainer.current.getBoundingClientRect();
+      setCaretPosition({ x: lyricsPos.x, y: lyricsPos.y });
+    }
 
     return () => {
       window.removeEventListener("keydown", handleUserKeyPress);
@@ -185,59 +212,68 @@ const Lyrics = memo(function Lyrics({
     };
   }, [lyricsData, activeBlock, profanityHidden]);
 
-  return null;
-
   return (
-    <div className="">
-      <ul className="flex flex-wrap text-xl" ref={lyricsContainer}>
+    <div className="text-xl">
+      {lyricsData && lyricsData.filteredLyrics && (
+        <span className="block my-5">{lyricsData.filteredLyrics[0].block}</span>
+      )}
+      <ul className="flex flex-wrap" ref={lyricsContainer}>
         {lyricsByWord.map((word, wordIndex) => {
           // we iterate through each word and show each character
           return (
-            <div
-              className={`inline mr-1.5 ${
-                wordIndex === activeWordIndex ? "active" : ""
-              }`}
-              key={wordIndex}
-            >
-              {word.split("").map((char, charIndex) => {
-                return (
-                  <span
-                    key={charIndex}
-                    className={`${
-                      userTyping.length > 0 &&
-                      wordIndex <= activeWordIndex &&
-                      userTyping[wordIndex] &&
-                      charIndex < userTyping[wordIndex].length
-                        ? userTyping[wordIndex][charIndex] === char
-                          ? "opacity-100" // if char is correct in word
-                          : "opacity-100 text-red-200" // if not
-                        : "opacity-50"
-                    } ${
-                      wordIndex === activeWordIndex &&
-                      userTyping[wordIndex] &&
-                      charIndex === userTyping[wordIndex].length - 1
-                        ? "lastChar"
-                        : ""
-                    }`}
-                  >
-                    {char}
-                  </span>
-                );
-              })}
-              {
-                // display any additional characters the user types for a given word
-                userTyping[wordIndex] &&
-                  userTyping[wordIndex].length > word.length && (
+            <React.Fragment key={wordIndex}>
+              {lineBreaks.includes(wordIndex) ? (
+                <div
+                  style={{ flexBasis: "100%", flexShrink: 0, flexGrow: 0 }}
+                />
+              ) : (
+                ""
+              )}
+              <div
+                className={`inline mr-1.5 ${
+                  wordIndex === activeWordIndex ? "active" : ""
+                }`}
+              >
+                {word.split("").map((char, charIndex) => {
+                  return (
                     <span
-                      className={`opacity-100 text-red-200 ${
-                        wordIndex === activeWordIndex ? "lastChar" : ""
+                      key={charIndex}
+                      className={`${
+                        userTyping.length > 0 &&
+                        wordIndex <= activeWordIndex &&
+                        userTyping[wordIndex] &&
+                        charIndex < userTyping[wordIndex].length
+                          ? userTyping[wordIndex][charIndex] === char
+                            ? "opacity-100" // if char is correct in word
+                            : "opacity-100 text-red-200" // if not
+                          : "opacity-50"
+                      } ${
+                        wordIndex === activeWordIndex &&
+                        userTyping[wordIndex] &&
+                        charIndex === userTyping[wordIndex].length - 1
+                          ? "lastChar"
+                          : ""
                       }`}
                     >
-                      {userTyping[wordIndex].slice(word.length)}
+                      {char}
                     </span>
-                  )
-              }
-            </div>
+                  );
+                })}
+                {
+                  // display any additional characters the user types for a given word
+                  userTyping[wordIndex] &&
+                    userTyping[wordIndex].length > word.length && (
+                      <span
+                        className={`opacity-100 text-red-200 ${
+                          wordIndex === activeWordIndex ? "lastChar" : ""
+                        }`}
+                      >
+                        {userTyping[wordIndex].slice(word.length)}
+                      </span>
+                    )
+                }
+              </div>
+            </React.Fragment>
           );
         })}
       </ul>
@@ -248,7 +284,7 @@ const Lyrics = memo(function Lyrics({
         style={{
           left: caretPosition.x,
           top: caretPosition.y,
-          transition: "left 0.1s linear",
+          transition: "left 0.1s linear, top 0.1s linear",
         }}
       ></div>
     </div>
