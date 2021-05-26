@@ -16,7 +16,7 @@ const options = {
 		Providers.Spotify({
 			clientId: process.env.NEXT_PUBLIC_SPOTIFY_ID,
 			clientSecret: process.env.NEXT_PUBLIC_SPOTIFY_SECRET,
-			scope: scope,
+			scope: scope.join(" "),
 		}),
 	],
 	jwt: true,
@@ -36,8 +36,6 @@ const options = {
 				token.accessTokenExpires = now.getTime();
 				token.profile = profile;
 			}
-			console.log(token);
-
 			if (Date.now() > token?.accessTokenExpires) {
 				token.accessToken = await generateNewToken(token.refreshToken);
 			}
@@ -56,8 +54,8 @@ const generateNewToken = async (refresh_token) => {
 		body: new URLSearchParams({
 			grant_type: "refresh_token",
 			refresh_token: refresh_token,
-			client_id: process.env.SPOTIFY_ID,
-			client_secret: process.env.SPOTIFY_SECRET,
+			clientId: process.env.NEXT_PUBLIC_SPOTIFY_ID,
+			clientSecret: process.env.NEXT_PUBLIC_SPOTIFY_SECRET,
 			scope: scope.join(" "),
 		}),
 	}).then((res) => res.json());
