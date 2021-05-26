@@ -109,8 +109,8 @@ export default function Home({ defaultSongLyrics, defaultSongMetadata }) {
 }
 
 export async function getStaticProps(context) {
-  const defaultSongName = "$andman",
-    defaultSongArtist = "ASAP Rocky";
+  const defaultSongName = "4r Da Squaw",
+    defaultSongArtist = "Isaiah Rashad";
 
   const { data: defaultSongLyrics, err } = await getLyricsFromGenius(
     defaultSongName,
