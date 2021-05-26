@@ -16,7 +16,6 @@ const Lyrics = memo(function Lyrics({
   const [lineBreaks, setLineBreaks] = useState([]);
 
   const [userTyping, setUserTyping] = useState([[]]);
-  const [activeWordIndex, setActiveWordIndex] = useState(0);
   const [caretPosition, setCaretPosition] = useState();
   const [isTyping, setIsTyping] = useState(false);
 
@@ -47,14 +46,11 @@ const Lyrics = memo(function Lyrics({
             let prevWord = prevUserTyping[prevUserTyping.length - 2];
             let actualPrevWord = lyricsByWord[prevUserTyping.length - 2];
 
-            if (!prevWord) {
-              prevUserTyping.pop();
-              setActiveWordIndex((i) => Math.max(i - 1, 0));
-            } else if (
+            if (
+              !prevWord ||
               prevWord.length !== actualPrevWord.length ||
               prevWord.join("") !== actualPrevWord
             ) {
-              setActiveWordIndex((i) => Math.max(i - 1, 0));
               prevUserTyping.pop();
             }
           } else {
@@ -65,7 +61,6 @@ const Lyrics = memo(function Lyrics({
           return [...prevUserTyping];
         } else {
           prevUserTyping.pop();
-          setActiveWordIndex((i) => Math.max(i - 1, 0));
         }
 
         return [...prevUserTyping];
@@ -80,10 +75,9 @@ const Lyrics = memo(function Lyrics({
 
         return [...prevUserTyping, []];
       });
-      setActiveWordIndex((i) => Math.min(lyricsByWord.length - 1, i + 1));
     }
 
-    if (keyCode >= 65 && keyCode <= 90) {
+    if ((keyCode >= 65 && keyCode <= 90) || (keyCode >= 48 && keyCode <= 57)) {
       setUserTyping((prevUserTyping) => {
         // if we have some typed character
         if (prevUserTyping[prevUserTyping.length - 1]) {
@@ -229,7 +223,7 @@ const Lyrics = memo(function Lyrics({
               )}
               <div
                 className={`inline mr-1.5 ${
-                  wordIndex === activeWordIndex ? "active" : ""
+                  wordIndex === userTyping.length - 1 ? "active" : ""
                 }`}
               >
                 {word.split("").map((char, charIndex) => {
@@ -239,7 +233,7 @@ const Lyrics = memo(function Lyrics({
                       className={`${
                         userTyping &&
                         userTyping.length > 0 &&
-                        wordIndex <= activeWordIndex &&
+                        wordIndex <= userTyping.length - 1 &&
                         userTyping[wordIndex] &&
                         charIndex < userTyping[wordIndex].length
                           ? userTyping[wordIndex][charIndex] === char
@@ -247,7 +241,7 @@ const Lyrics = memo(function Lyrics({
                             : "opacity-100 text-red-200" // if not
                           : "opacity-50"
                       } ${
-                        wordIndex === activeWordIndex &&
+                        wordIndex === userTyping.length - 1 &&
                         userTyping[wordIndex] &&
                         charIndex === userTyping[wordIndex].length - 1
                           ? "lastChar"
@@ -264,7 +258,7 @@ const Lyrics = memo(function Lyrics({
                     userTyping[wordIndex].length > word.length && (
                       <span
                         className={`opacity-100 text-red-200 ${
-                          wordIndex === activeWordIndex ? "lastChar" : ""
+                          wordIndex === userTyping.length - 1 ? "lastChar" : ""
                         }`}
                       >
                         {userTyping[wordIndex].slice(word.length)}
