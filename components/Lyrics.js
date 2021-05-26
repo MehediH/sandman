@@ -7,11 +7,7 @@ const Lyrics = memo(function Lyrics({
   activeBlock,
   profanityHidden,
 }) {
-  const [lyricsByWord, setLyricsByWord] = useState(
-    profanityHidden
-      ? lyricsToWords(lyricsData.lyrics[activeBlock].text)
-      : lyricsToWords(lyricsData.filteredLyrics[activeBlock].text)
-  );
+  const [lyricsByWord, setLyricsByWord] = useState([]);
 
   const [lineBreaks, setLineBreaks] = useState([]);
 
@@ -24,7 +20,7 @@ const Lyrics = memo(function Lyrics({
   const typingObserver = useRef(null);
   const caretObserver = useRef(null);
 
-  const handleUserKeyPress = useCallback((e) => {
+  const handleUserKeyPress = useCallback((e, lyricsByWord) => {
     const { key, keyCode } = e;
 
     // don't track typing when the user is searching
@@ -38,6 +34,8 @@ const Lyrics = memo(function Lyrics({
     }, 2000);
 
     let typingShakeTimeout;
+
+    console.log("hi");
 
     // backspace, remove last char of last word
     if (keyCode === 8) {
@@ -104,7 +102,7 @@ const Lyrics = memo(function Lyrics({
       clearTimeout(caretObserver.current);
       clearTimeout(typingShakeTimeout);
     };
-  }, []);
+  });
 
   const trackTyping = () => {
     if (!lyricsContainer.current) return;
@@ -140,6 +138,12 @@ const Lyrics = memo(function Lyrics({
   };
 
   useEffect(() => {
+    const lyricsByWord = profanityHidden
+      ? lyricsToWords(lyricsData.filteredLyrics[activeBlock].text)
+      : lyricsToWords(lyricsData.lyrics[activeBlock].text);
+
+    setLyricsByWord(lyricsByWord);
+
     const l = lyricsData.filteredLyrics[activeBlock].text
       .split("\n")
       .filter((l) => l != "")
@@ -154,7 +158,10 @@ const Lyrics = memo(function Lyrics({
         .filter((l) => l !== null)
     );
 
-    window.addEventListener("keydown", handleUserKeyPress);
+    const proxyKeyPress = (e) => handleUserKeyPress(e, lyricsByWord);
+
+    window.addEventListener("keydown", proxyKeyPress);
+
     window.addEventListener("resize", moveCursor);
 
     typingObserver.current = trackTyping();
@@ -162,7 +169,7 @@ const Lyrics = memo(function Lyrics({
     setUserTyping([[]]);
 
     return () => {
-      window.removeEventListener("keydown", handleUserKeyPress);
+      window.removeEventListener("keydown", proxyKeyPress);
       window.removeEventListener("resize", moveCursor);
 
       if (typingObserver.current) {
