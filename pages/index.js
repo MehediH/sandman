@@ -8,6 +8,7 @@ import { getLyricsFromGenius } from "./api/getLyrics";
 import { searchSongsOnGenius } from "./api/searchSongs";
 import { cleanLyrics, cleanLyricsIntoArray } from "../lib/utils";
 import LyricsPlaceholder from "../components/LyricsPlaceholder";
+import PlaybackControl from "../components/PlaybackControl";
 
 import { getSession, signIn, signOut, useSession } from "next-auth/client";
 import { initPlayer, takeOver, loadSDK } from "../lib/initPlayer";
@@ -23,7 +24,8 @@ export default function Home({
 	const [lyrics, setLyrics] = useState(defaultSongLyrics);
 	const [lyricsLoading, setLyricsLoading] = useState(false);
 	const [activeBlock, setActiveBlock] = useState(1);
-	const [playing, setPlaying] = useState("");
+	const [playing, setPlaying] = useState();
+	const [uri, setUri] = useState("");
 
 	const [song, setSong] = useState(defaultSongMetadata);
 
@@ -104,6 +106,11 @@ export default function Home({
 							>
 								Sign out
 							</button>
+							<PlaybackControl
+								access_token={session?.user.access_token}
+								playing={playing}
+								uri={uri}
+							/>
 							<img
 								className="w-10 h-10 rounded-full select-none pointer-events-none inline-block"
 								src={session?.user?.picture}
@@ -119,7 +126,7 @@ export default function Home({
 					</p>
 				) : (
 					<>
-						<Song data={song} currentlyPlaying={true} />
+						<Song data={song} currentlyPlaying={true} setUri={setUri} />
 
 						<label
 							htmlFor="hideProfanity"
