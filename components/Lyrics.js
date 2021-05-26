@@ -17,6 +17,7 @@ const Lyrics = memo(function Lyrics({
 
   const [userTyping, setUserTyping] = useState([[]]);
   const [caretPosition, setCaretPosition] = useState();
+  const [cursorShake, setCursorShake] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
 
   const lyricsContainer = useRef(null);
@@ -36,6 +37,8 @@ const Lyrics = memo(function Lyrics({
       setIsTyping(false);
     }, 2000);
 
+    let typingShakeTimeout;
+
     // backspace, remove last char of last word
     if (keyCode === 8) {
       setUserTyping((prevUserTyping) => {
@@ -47,18 +50,27 @@ const Lyrics = memo(function Lyrics({
             let actualPrevWord = lyricsByWord[prevUserTyping.length - 2];
 
             if (
-              !prevWord ||
-              prevWord.length !== actualPrevWord.length ||
-              prevWord.join("") !== actualPrevWord
+              (!prevWord ||
+                prevWord.length !== actualPrevWord.length ||
+                prevWord.join("") !== actualPrevWord) &&
+              prevUserTyping.length !== 1
             ) {
               prevUserTyping.pop();
+            } else {
+              setCursorShake(true);
+              typingShakeTimeout = setTimeout(() => {
+                setCursorShake(false);
+              }, 800);
             }
           } else {
             currentWord.pop();
+
+            if (prevUserTyping.length === 1 && currentWord.length === 0) {
+              currentWord = [];
+            }
+
             prevUserTyping[prevUserTyping.length - 1] = currentWord;
           }
-        } else {
-          prevUserTyping.pop();
         }
 
         return [...prevUserTyping];
@@ -90,6 +102,7 @@ const Lyrics = memo(function Lyrics({
 
     return () => {
       clearTimeout(caretObserver.current);
+      clearTimeout(typingShakeTimeout);
     };
   }, []);
 
@@ -225,7 +238,7 @@ const Lyrics = memo(function Lyrics({
         <div
           className={` w-1 h-5 mt-1.5 bg-gray-200 rounded-xl absolute ${
             !isTyping ? "animate-pulse" : ""
-          }`}
+          } ${cursorShake ? "animate-shake" : ""}`}
           style={{
             left: caretPosition.x,
             top: caretPosition.y,
