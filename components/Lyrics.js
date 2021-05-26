@@ -6,6 +6,7 @@ const Lyrics = memo(function Lyrics({
   lyricsData,
   activeBlock,
   profanityHidden,
+  blockComplete,
 }) {
   const [lyricsByWord, setLyricsByWord] = useState([]);
 
@@ -78,8 +79,10 @@ const Lyrics = memo(function Lyrics({
       e.preventDefault();
 
       setUserTyping((prevUserTyping) => {
-        if (prevUserTyping.length === lyricsByWord.length)
+        if (prevUserTyping.length === lyricsByWord.length) {
+          blockComplete(userTyping);
           return [...prevUserTyping];
+        }
 
         return [...prevUserTyping, []];
       });
@@ -138,6 +141,8 @@ const Lyrics = memo(function Lyrics({
   };
 
   useEffect(() => {
+    setUserTyping([[]]);
+
     const lyricsByWord = profanityHidden
       ? lyricsToWords(lyricsData.filteredLyrics[activeBlock].text)
       : lyricsToWords(lyricsData.lyrics[activeBlock].text);
@@ -165,8 +170,6 @@ const Lyrics = memo(function Lyrics({
     window.addEventListener("resize", moveCursor);
 
     typingObserver.current = trackTyping();
-
-    setUserTyping([[]]);
 
     return () => {
       window.removeEventListener("keydown", proxyKeyPress);

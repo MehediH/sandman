@@ -11,6 +11,7 @@ import LyricsPlaceholder from "../components/LyricsPlaceholder";
 
 import { getSession, signIn, signOut, useSession } from "next-auth/client";
 import { initPlayer, takeOver, loadSDK } from "../lib/initPlayer";
+import LyricsBlockPreview from "../components/LyricsBlockPreview";
 
 export default function Home({
   defaultSongLyrics,
@@ -22,7 +23,9 @@ export default function Home({
   const [profanityHidden, setProfanityHidden] = useState(true);
   const [lyrics, setLyrics] = useState(defaultSongLyrics);
   const [lyricsLoading, setLyricsLoading] = useState(false);
-  const [activeBlock, setActiveBlock] = useState(1);
+  const [activeBlock, setActiveBlock] = useState(0);
+  const [userTypeByBlock, setUserTypeByBlock] = useState([]);
+
   const [playing, setPlaying] = useState("");
 
   const [song, setSong] = useState(defaultSongMetadata);
@@ -30,7 +33,7 @@ export default function Home({
 
   useEffect(() => {
     startPlayer();
-  }, []);
+  }, [activeBlock, userTypeByBlock]);
 
   const handleSongChange = async (song) => {
     setErr(null);
@@ -86,6 +89,11 @@ export default function Home({
 
   const stoppedPlaying = () => {
     setPlaying({ deviceSwitched: true });
+  };
+
+  const handleBlockComplete = (userTypeForEachBlock) => {
+    setUserTypeByBlock((existing) => [...existing, userTypeForEachBlock]);
+    setActiveBlock((i) => Math.min(i + 1, lyrics.filteredLyrics.length - 1));
   };
 
   return (
@@ -156,11 +164,27 @@ export default function Home({
             </label>
 
             {!lyricsLoading ? (
-              <Lyrics
-                lyricsData={lyrics}
-                activeBlock={activeBlock}
-                profanityHidden={profanityHidden}
-              />
+              <>
+                <Lyrics
+                  lyricsData={lyrics}
+                  activeBlock={activeBlock}
+                  profanityHidden={profanityHidden}
+                  blockComplete={handleBlockComplete}
+                />
+
+                {lyrics.filteredLyrics
+                  .slice(activeBlock + 1)
+                  .map((block, index) => {
+                    return (
+                      <LyricsBlockPreview
+                        key={index}
+                        lyricsData={lyrics}
+                        activeBlock={activeBlock + index + 1}
+                        profanityHidden={profanityHidden}
+                      />
+                    );
+                  })}
+              </>
             ) : (
               <LyricsPlaceholder />
             )}
