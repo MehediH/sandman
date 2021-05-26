@@ -35,8 +35,6 @@ const Lyrics = memo(function Lyrics({
 
     let typingShakeTimeout;
 
-    console.log("hi");
-
     // backspace, remove last char of last word
     if (keyCode === 8) {
       setUserTyping((prevUserTyping) => {
@@ -77,6 +75,8 @@ const Lyrics = memo(function Lyrics({
 
     // space, move to next word
     if (keyCode === 32) {
+      e.preventDefault();
+
       setUserTyping((prevUserTyping) => {
         if (prevUserTyping.length === lyricsByWord.length)
           return [...prevUserTyping];
