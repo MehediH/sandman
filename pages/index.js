@@ -1,6 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Lyrics from "../components/Lyrics";
 import Search from "../components/search";
 import RoundComplete from "../components/RoundComplete";
@@ -14,6 +14,7 @@ import PlaybackControl from "../components/PlaybackControl";
 import { getSession, signIn, signOut, useSession } from "next-auth/client";
 import { initPlayer, takeOver, loadSDK } from "../lib/initPlayer";
 import LyricsBlockPreview from "../components/LyricsBlockPreview";
+import differenceInSeconds from "date-fns/differenceInSeconds";
 
 export default function Home({
   defaultSongLyrics,
@@ -33,6 +34,9 @@ export default function Home({
 
   const [song, setSong] = useState(defaultSongMetadata);
   const [err, setErr] = useState(lyricsTransformErr);
+
+  const [startTime, setStartTime] = useState();
+  const [roundDuration, setRoundDuration] = useState();
 
   useEffect(() => {
     startPlayer();
@@ -100,6 +104,7 @@ export default function Home({
   };
 
   const handleRoundComplete = (userTypeForEachBlock) => {
+    setRoundDuration(differenceInSeconds(new Date(), startTime));
     setUserTypeByBlock((existing) => [...existing, userTypeForEachBlock]);
     setActiveBlock(0);
     setRoundComplete(true);
@@ -174,14 +179,32 @@ export default function Home({
 
             {!lyricsLoading && !roundComplete && (
               <>
-                <Lyrics
-                  key={20}
-                  lyricsData={lyrics}
-                  activeBlock={activeBlock}
-                  profanityHidden={profanityHidden}
-                  blockComplete={handleBlockComplete}
-                  finishRound={handleRoundComplete}
-                />
+                {startTime ? (
+                  <Lyrics
+                    lyricsData={lyrics}
+                    activeBlock={activeBlock}
+                    profanityHidden={profanityHidden}
+                    blockComplete={handleBlockComplete}
+                    finishRound={handleRoundComplete}
+                  />
+                ) : (
+                  <>
+                    <button
+                      tabIndex={0}
+                      className="mr-auto my-10 mb-5 bg-gray-200 hover:bg-gray-300 transition ease-in-out px-10 py-2 text-purple-600 rounded-lg shadow-lg"
+                      onClick={() => {
+                        setStartTime(new Date());
+                      }}
+                    >
+                      Start Typing
+                    </button>
+                    <LyricsBlockPreview
+                      lyricsData={lyrics}
+                      activeBlock={0}
+                      profanityHidden={profanityHidden}
+                    />
+                  </>
+                )}
 
                 {lyrics.filteredLyrics
                   .slice(activeBlock + 1)
@@ -205,6 +228,7 @@ export default function Home({
                 userTyping={userTypeByBlock}
                 lyricsData={lyrics}
                 profanityHidden={profanityHidden}
+                roundDuration={roundDuration}
               />
             )}
           </>
