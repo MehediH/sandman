@@ -3,10 +3,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Lyrics from "../components/Lyrics";
 import Search from "../components/search";
+import RoundComplete from "../components/RoundComplete";
 import Song from "../components/Song";
 import { getLyricsFromGenius } from "./api/getLyrics";
 import { searchSongsOnGenius } from "./api/searchSongs";
-import { cleanLyrics, cleanLyricsIntoArray } from "../lib/utils";
+import { cleanLyricsIntoArray } from "../lib/utils.js";
 import LyricsPlaceholder from "../components/LyricsPlaceholder";
 import PlaybackControl from "../components/PlaybackControl";
 
@@ -26,6 +27,7 @@ export default function Home({
   const [lyricsLoading, setLyricsLoading] = useState(false);
   const [activeBlock, setActiveBlock] = useState(0);
   const [userTypeByBlock, setUserTypeByBlock] = useState([]);
+  const [roundComplete, setRoundComplete] = useState(false);
 
   const [playing, setPlaying] = useState("");
 
@@ -97,6 +99,12 @@ export default function Home({
     setActiveBlock((i) => Math.min(i + 1, lyrics.filteredLyrics.length - 1));
   };
 
+  const handleRoundComplete = (userTypeForEachBlock) => {
+    setUserTypeByBlock((existing) => [...existing, userTypeForEachBlock]);
+    setActiveBlock(0);
+    setRoundComplete(true);
+  };
+
   return (
     <div className="bg-gradient-to-b from-purple-600 via-purple-400 to-purple-300 text-white min-h-screen">
       <Head>
@@ -164,13 +172,15 @@ export default function Home({
               <span>Filter profanity</span>
             </label>
 
-            {!lyricsLoading ? (
+            {!lyricsLoading && !roundComplete && (
               <>
                 <Lyrics
+                  key={20}
                   lyricsData={lyrics}
                   activeBlock={activeBlock}
                   profanityHidden={profanityHidden}
                   blockComplete={handleBlockComplete}
+                  finishRound={handleRoundComplete}
                 />
 
                 {lyrics.filteredLyrics
@@ -186,8 +196,16 @@ export default function Home({
                     );
                   })}
               </>
-            ) : (
-              <LyricsPlaceholder />
+            )}
+
+            {lyricsLoading && !roundComplete && <LyricsPlaceholder />}
+
+            {!lyricsLoading && roundComplete && (
+              <RoundComplete
+                userTyping={userTypeByBlock}
+                lyricsData={lyrics}
+                profanityHidden={profanityHidden}
+              />
             )}
           </>
         )}

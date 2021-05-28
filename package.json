@@ -1,5 +1,5 @@
 {
-  "name": "with-tailwindcss",
+  "name": "sandman",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,6 +10,7 @@
   "dependencies": {
     "@tailwindcss/forms": "^0.3.2",
     "bad-words": "^3.0.4",
+    "framer-motion": "^4.1.17",
     "genius-lyrics-api": "^3.0.6",
     "next": "latest",
     "next-auth": "^3.23.3",

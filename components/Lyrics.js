@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, memo, useRef } from "react";
-import { lyricsToWords } from "../lib/utils";
+import { lyricsToWords } from "../lib/utils.js";
 
 // lyricsData is an Object with `lyrics` and `filteredLyrics`
 const Lyrics = memo(function Lyrics({
@@ -7,6 +7,7 @@ const Lyrics = memo(function Lyrics({
   activeBlock,
   profanityHidden,
   blockComplete,
+  finishRound,
 }) {
   const [lyricsByWord, setLyricsByWord] = useState([]);
 
@@ -16,12 +17,16 @@ const Lyrics = memo(function Lyrics({
   const [caretPosition, setCaretPosition] = useState();
   const [cursorShake, setCursorShake] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [isBlockComplete, setIsBlockComplete] = useState(false);
+  const [isRoundComplete, setIsRoundComplete] = useState(false);
+  const [mounted, setMounted] = useState(true);
 
   const lyricsContainer = useRef(null);
   const typingObserver = useRef(null);
   const caretObserver = useRef(null);
 
   const handleUserKeyPress = useCallback((e, lyricsByWord) => {
+    if (!mounted) return;
     const { key, keyCode } = e;
 
     // don't track typing when the user is searching
@@ -35,6 +40,12 @@ const Lyrics = memo(function Lyrics({
     }, 2000);
 
     let typingShakeTimeout;
+
+    if (keyCode === 13) {
+      setIsRoundComplete(true);
+
+      return;
+    }
 
     // backspace, remove last char of last word
     if (keyCode === 8) {
@@ -80,7 +91,7 @@ const Lyrics = memo(function Lyrics({
 
       setUserTyping((prevUserTyping) => {
         if (prevUserTyping.length === lyricsByWord.length) {
-          blockComplete(userTyping);
+          setIsBlockComplete(true);
           return [...prevUserTyping];
         }
 
@@ -141,7 +152,12 @@ const Lyrics = memo(function Lyrics({
   };
 
   useEffect(() => {
+    if (isBlockComplete) blockComplete(userTyping);
+    if (isRoundComplete) finishRound(userTyping);
+
     setUserTyping([[]]);
+    setIsBlockComplete(false);
+    setMounted(true);
 
     const lyricsByWord = profanityHidden
       ? lyricsToWords(lyricsData.filteredLyrics[activeBlock].text)
@@ -179,8 +195,16 @@ const Lyrics = memo(function Lyrics({
         typingObserver.current.disconnect();
         typingObserver.current = null;
       }
+
+      setMounted(false);
     };
-  }, [lyricsData, activeBlock, profanityHidden]);
+  }, [
+    lyricsData,
+    activeBlock,
+    profanityHidden,
+    isBlockComplete,
+    isRoundComplete,
+  ]);
 
   return (
     <div className="text-xl">
