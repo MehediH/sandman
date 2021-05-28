@@ -2,10 +2,17 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { lyricsToWords } from "../lib/utils.js";
 
-const RoundComplete = ({ userTyping, lyricsData, profanityHidden }) => {
+const RoundComplete = ({
+  userTyping,
+  lyricsData,
+  profanityHidden,
+  roundDuration,
+}) => {
   const [correct, setCorrect] = useState(0);
   const [mistyped, setMistyped] = useState(0);
   const [skipped, setSkipped] = useState(0);
+  const [totalWPM, setTotalWPM] = useState(0);
+  const [wpmByBlock, setWPMByBlock] = useState([]);
 
   useEffect(() => {
     const lyrics = profanityHidden
@@ -36,7 +43,7 @@ const RoundComplete = ({ userTyping, lyricsData, profanityHidden }) => {
       setSkipped((s) => s + skipped.length);
       setMistyped((m) => m + mistyped.length);
     }
-  }, [userTyping, lyricsData]);
+  }, [userTyping, lyricsData, roundDuration]);
 
   return (
     <motion.div
@@ -49,6 +56,7 @@ const RoundComplete = ({ userTyping, lyricsData, profanityHidden }) => {
       <h2>Correct words: {correct}</h2>
       <h2>Skipped words: {skipped}</h2>
       <h2>Incorrect words: {mistyped}</h2>
+      <h2>Time taken: {roundDuration} (in seconds)</h2>
     </motion.div>
   );
 };
