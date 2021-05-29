@@ -36,12 +36,13 @@ export default function Home({
   const [err, setErr] = useState(lyricsTransformErr);
 
   const [startTime, setStartTime] = useState();
+  const [blockTimes, setBlockTimes] = useState([]);
   const [roundDuration, setRoundDuration] = useState();
 
   const [coverColors, setCoverColors] = useState([]);
 
   useEffect(() => {
-    startPlayer();
+    // startPlayer();
 
     const getProminentColors = async () => {
       if (!song || !song.albumArt) return;
@@ -62,7 +63,7 @@ export default function Home({
     setErr(null);
     setSong(song);
     setLyricsLoading(true);
-    setStartTime(null);
+    setStartTime([]);
 
     const songName = song.title.split(" by")[0];
     const artistName = song.title.split(" by")[1].substr(1);
@@ -116,12 +117,14 @@ export default function Home({
   };
 
   const handleBlockComplete = (userTypeForEachBlock) => {
+    setStartTime(new Date())
+    setBlockTimes([...blockTimes, differenceInSeconds(new Date(), startTime)]);
     setUserTypeByBlock((existing) => [...existing, userTypeForEachBlock]);
     setActiveBlock((i) => Math.min(i + 1, lyrics.filteredLyrics.length - 1));
   };
 
   const handleRoundComplete = (userTypeForEachBlock) => {
-    setRoundDuration(differenceInSeconds(new Date(), startTime));
+    setRoundDuration(differenceInSeconds(new Date(), blockTimes[0]));
     setUserTypeByBlock((existing) => [...existing, userTypeForEachBlock]);
     setActiveBlock(0);
     setRoundComplete(true);
@@ -216,10 +219,11 @@ export default function Home({
                           className="mr-auto my-10 mb-5 bg-gray-200 hover:bg-gray-300 transition ease-in-out px-10 py-2 text-purple-600 rounded-lg shadow-lg"
                           onClick={() => {
                             setStartTime(new Date());
+                            setBlockTimes([new Date()]);
                           }}
                         >
                           Start Typing
-                        </button>
+                        </button> 
                         <LyricsBlockPreview
                           lyricsData={lyrics}
                           activeBlock={0}
@@ -251,6 +255,7 @@ export default function Home({
                     lyricsData={lyrics}
                     profanityHidden={profanityHidden}
                     roundDuration={roundDuration}
+                    blockTimes={blockTimes}
                   />
                 )}
               </Song>
@@ -263,8 +268,8 @@ export default function Home({
 }
 
 export async function getStaticProps(context) {
-  const defaultSongName = "durag activity",
-    defaultSongArtist = "baby keem";
+  const defaultSongName = "town crier",
+    defaultSongArtist = "mavi";
 
   const { data: defaultSongLyrics, err } = await getLyricsFromGenius(
     defaultSongName,
