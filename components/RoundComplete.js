@@ -38,13 +38,17 @@ const RoundComplete = ({
         (w, i) =>
           lyricBlock[i].length !== w.length || lyricBlock[i] !== w.join("")
       );
-
+      setWPMByBlock([...wpmByBlock, correct / (15) / 60])
       setCorrect((c) => c + correct.length);
       setSkipped((s) => s + skipped.length);
       setMistyped((m) => m + mistyped.length);
     }
+    
+    // cpm is char / (time / 60)
+    // wpm is char / 5
+    setTotalWPM(correct / (roundDuration / 60))
   }, [userTyping, lyricsData, roundDuration]);
-
+  console.log(userTyping)
   return (
     <motion.div
       className={"text-xl my-5"}
@@ -52,7 +56,11 @@ const RoundComplete = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
+      {wpmByBlock.map((x, i) => {
+        <p>{`Block ${i}: ${x}`}</p>
+      })}
       <h1>Round Complete</h1>
+      <h2>WPM: {correct / (roundDuration / 60)}</h2>
       <h2>Correct words: {correct}</h2>
       <h2>Skipped words: {skipped}</h2>
       <h2>Incorrect words: {mistyped}</h2>
