@@ -38,17 +38,34 @@ export default function Home({
   const [startTime, setStartTime] = useState();
   const [roundDuration, setRoundDuration] = useState();
 
+  const [coverColors, setCoverColors] = useState([]);
+
   useEffect(() => {
     startPlayer();
-  }, [activeBlock, userTypeByBlock]);
+
+    const getProminentColors = async () => {
+      if (!song || !song.albumArt) return;
+
+      const { colors, err } = await fetch(
+        `./api/getProminentCoverColors?coverUrl=${song.albumArt}`
+      ).then((res) => res.json());
+
+      if (err) return;
+
+      setCoverColors(colors);
+    };
+
+    getProminentColors();
+  }, [activeBlock, userTypeByBlock, song]);
 
   const handleSongChange = async (song) => {
     setErr(null);
     setSong(song);
     setLyricsLoading(true);
+    setStartTime(null);
 
-    const songName = song.title.split("by")[0];
-    const artistName = song.title.split("by")[1].substr(1);
+    const songName = song.title.split(" by")[0];
+    const artistName = song.title.split(" by")[1].substr(1);
 
     const lyricsData = await fetch(
       `./api/getLyrics?songName=${songName}&artistName=${artistName}`
@@ -111,128 +128,135 @@ export default function Home({
   };
 
   return (
-    <div className="bg-gradient-to-b from-purple-600 via-purple-400 to-purple-300 text-white min-h-screen">
+    <div className="p-12 bg-black">
       <Head>
         <title>sandman</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="py-20 max-w-screen-2xl m-auto flex flex-col">
-        <div className="flex items-center">
-          <Link href="/">
-            <a className="text-5xl select-none mr-5">🎧</a>
-          </Link>
-          <Search selectSong={handleSongChange} />
+      <div
+        style={{
+          "--tw-gradient-from": coverColors ? coverColors[1] : "",
+        }}
+        className="lyricsBox bg-gradient-to-b from-black to-black text-white rounded-extraLarge shadow-lg overflow-hidden"
+      >
+        <div className="py-20 max-w-screen-2xl m-auto flex flex-col">
+          <div className="flex items-center">
+            <Link href="/">
+              <a className="text-5xl select-none mr-5">🎧</a>
+            </Link>
+            <Search selectSong={handleSongChange} />
 
-          {!session && (
-            <button
-              className="ml-auto font-bold hover:opacity-80 focus:outline-none"
-              onClick={() => signIn("spotify")}
-            >
-              Sign in with Spotify
-            </button>
-          )}
-          {session && (
-            <div className="ml-auto flex-row-reverse flex">
+            {!session && (
               <button
-                className="font-bold ml-5 hover:opacity-50 focus:outline-none"
-                onClick={() => signOut()}
+                className="ml-auto font-bold hover:opacity-80 focus:outline-none"
+                onClick={() => signIn("spotify")}
               >
-                Sign out
+                Sign in with Spotify
               </button>
-              <img
-                className="w-10 h-10 rounded-full select-none pointer-events-none inline-block"
-                src={session?.user?.picture}
-                draggable={false}
-              ></img>
-            </div>
-          )}
-        </div>
+            )}
+            {session && (
+              <div className="ml-auto flex-row-reverse flex">
+                <button
+                  className="font-bold ml-5 hover:opacity-50 focus:outline-none"
+                  onClick={() => signOut()}
+                >
+                  Sign out
+                </button>
+                <img
+                  className="w-10 h-10 rounded-full select-none pointer-events-none inline-block"
+                  src={session?.user?.picture}
+                  draggable={false}
+                ></img>
+              </div>
+            )}
+          </div>
 
-        {err ? (
-          <p className="my-20">
-            This song is not supported yet. Please try a different one.
-            <code className="block text-sm my-2 opacity-70">
-              Error message: {err}
-            </code>
-          </p>
-        ) : (
-          <>
-            <Song data={song} currentlyPlaying={true} />
-
-            <label
-              htmlFor="hideProfanity"
-              className="opacity-70 hover:opacity-100 transition-all cursor-pointer"
-            >
-              <input
-                tabIndex="0"
-                type="checkbox"
-                id="hideProfanity"
-                className="rounded-sm mr-2"
-                onChange={() => {
-                  setProfanityHidden((h) => !h);
-                }}
-                checked={profanityHidden}
-              />
-              <span>Filter profanity</span>
-            </label>
-
-            {!lyricsLoading && !roundComplete && (
-              <>
-                {startTime ? (
-                  <Lyrics
-                    lyricsData={lyrics}
-                    activeBlock={activeBlock}
-                    profanityHidden={profanityHidden}
-                    blockComplete={handleBlockComplete}
-                    finishRound={handleRoundComplete}
+          {err ? (
+            <p className="my-20">
+              This song is not supported yet. Please try a different one.
+              <code className="block text-sm my-2 opacity-70">
+                Error message: {err}
+              </code>
+            </p>
+          ) : (
+            <>
+              <Song data={song} currentlyPlaying={true}>
+                <label
+                  htmlFor="hideProfanity"
+                  className="opacity-70 hover:opacity-100 transition-all cursor-pointer mt-2"
+                >
+                  <input
+                    tabIndex="0"
+                    type="checkbox"
+                    id="hideProfanity"
+                    className="rounded-sm mr-2"
+                    onChange={() => {
+                      setProfanityHidden((h) => !h);
+                    }}
+                    checked={profanityHidden}
                   />
-                ) : (
+                  <span>Filter profanity</span>
+                </label>
+
+                {!lyricsLoading && !roundComplete && (
                   <>
-                    <button
-                      tabIndex={0}
-                      className="mr-auto my-10 mb-5 bg-gray-200 hover:bg-gray-300 transition ease-in-out px-10 py-2 text-purple-600 rounded-lg shadow-lg"
-                      onClick={() => {
-                        setStartTime(new Date());
-                      }}
-                    >
-                      Start Typing
-                    </button>
-                    <LyricsBlockPreview
-                      lyricsData={lyrics}
-                      activeBlock={0}
-                      profanityHidden={profanityHidden}
-                    />
+                    {startTime ? (
+                      <Lyrics
+                        lyricsData={lyrics}
+                        activeBlock={activeBlock}
+                        profanityHidden={profanityHidden}
+                        blockComplete={handleBlockComplete}
+                        finishRound={handleRoundComplete}
+                      />
+                    ) : (
+                      <>
+                        <button
+                          tabIndex={0}
+                          className="mr-auto my-10 mb-5 bg-gray-200 hover:bg-gray-300 transition ease-in-out px-10 py-2 text-purple-600 rounded-lg shadow-lg"
+                          onClick={() => {
+                            setStartTime(new Date());
+                          }}
+                        >
+                          Start Typing
+                        </button>
+                        <LyricsBlockPreview
+                          lyricsData={lyrics}
+                          activeBlock={0}
+                          profanityHidden={profanityHidden}
+                        />
+                      </>
+                    )}
+
+                    {lyrics.filteredLyrics
+                      .slice(activeBlock + 1)
+                      .map((block, index) => {
+                        return (
+                          <LyricsBlockPreview
+                            key={index}
+                            lyricsData={lyrics}
+                            activeBlock={activeBlock + index + 1}
+                            profanityHidden={profanityHidden}
+                          />
+                        );
+                      })}
                   </>
                 )}
 
-                {lyrics.filteredLyrics
-                  .slice(activeBlock + 1)
-                  .map((block, index) => {
-                    return (
-                      <LyricsBlockPreview
-                        key={index}
-                        lyricsData={lyrics}
-                        activeBlock={activeBlock + index + 1}
-                        profanityHidden={profanityHidden}
-                      />
-                    );
-                  })}
-              </>
-            )}
+                {lyricsLoading && !roundComplete && <LyricsPlaceholder />}
 
-            {lyricsLoading && !roundComplete && <LyricsPlaceholder />}
-
-            {!lyricsLoading && roundComplete && (
-              <RoundComplete
-                userTyping={userTypeByBlock}
-                lyricsData={lyrics}
-                profanityHidden={profanityHidden}
-                roundDuration={roundDuration}
-              />
-            )}
-          </>
-        )}
+                {!lyricsLoading && roundComplete && (
+                  <RoundComplete
+                    userTyping={userTypeByBlock}
+                    lyricsData={lyrics}
+                    profanityHidden={profanityHidden}
+                    roundDuration={roundDuration}
+                  />
+                )}
+              </Song>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

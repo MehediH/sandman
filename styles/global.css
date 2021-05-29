@@ -28,3 +28,7 @@
     transform: translate3d(0.5px, 0, 0);
   }
 }
+
+.lyricsBox {
+  height: calc(100vh - 7rem);
+}
