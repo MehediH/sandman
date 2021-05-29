@@ -7,6 +7,7 @@ const RoundComplete = ({
   lyricsData,
   profanityHidden,
   roundDuration,
+  blockTimes
 }) => {
   const [correct, setCorrect] = useState(0);
   const [mistyped, setMistyped] = useState(0);
@@ -38,7 +39,10 @@ const RoundComplete = ({
         (w, i) =>
           lyricBlock[i].length !== w.length || lyricBlock[i] !== w.join("")
       );
-      setWPMByBlock([...wpmByBlock, correct / (15) / 60])
+      console.log(correct.length, blockTimes[i] / 60)
+
+      console.log(correct.length / (blockTimes[i] / 60))
+      if (i < 1) setWPMByBlock([...wpmByBlock, correct.length / (blockTimes[i] / 60)])
       setCorrect((c) => c + correct.length);
       setSkipped((s) => s + skipped.length);
       setMistyped((m) => m + mistyped.length);
@@ -48,7 +52,7 @@ const RoundComplete = ({
     // wpm is char / 5
     setTotalWPM(correct / (roundDuration / 60))
   }, [userTyping, lyricsData, roundDuration]);
-  console.log(userTyping)
+  console.log(blockTimes)
   return (
     <motion.div
       className={"text-xl my-5"}
@@ -56,10 +60,12 @@ const RoundComplete = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
+
+      <h1 className="text-3xl font-dela">Round Complete</h1>      
       {wpmByBlock.map((x, i) => {
-        <p>{`Block ${i}: ${x}`}</p>
+        return <h2>{`Block ${i+1}: ${x} WPM`}</h2>
       })}
-      <h1>Round Complete</h1>
+      {/* THIS SHIT DOESN'T WORK */}
       <h2>WPM: {correct / (roundDuration / 60)}</h2>
       <h2>Correct words: {correct}</h2>
       <h2>Skipped words: {skipped}</h2>
