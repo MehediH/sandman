@@ -207,7 +207,7 @@ const Lyrics = memo(function Lyrics({
   ]);
 
   return (
-    <div className="text-xl">
+    <div className="text-xl font-code">
       {lyricsData && lyricsData.filteredLyrics && (
         <span className="block my-5">
           {lyricsData.filteredLyrics[activeBlock].block}

@@ -30,7 +30,7 @@ const LyricsBlockPreview = ({ lyricsData, activeBlock, profanityHidden }) => {
   }, [lyricsData, activeBlock, profanityHidden]);
 
   return (
-    <div className="text-xl opacity-30">
+    <div className="text-xl opacity-30 font-code">
       {lyricsData && lyricsData.filteredLyrics && (
         <span className="block my-5">
           {lyricsData.filteredLyrics[activeBlock].block}

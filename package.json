@@ -15,6 +15,7 @@
     "genius-lyrics-api": "^3.0.6",
     "next": "latest",
     "next-auth": "^3.23.3",
+    "node-vibrant": "^3.2.1-alpha.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-loading-skeleton": "^2.2.0"
