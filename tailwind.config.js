@@ -17,7 +17,7 @@ module.exports = {
     },
     fontFamily: {
       dela: ["Dela Gothic One", "cursive"],
-      code: ["Inconsolata", "monospace"],
+      code: ["Roboto Mono", "monospace"],
     },
   },
   variants: {

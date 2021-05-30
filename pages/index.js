@@ -136,9 +136,9 @@ export default function Home({
 
       <div
         style={{
-          "--tw-gradient-from": coverColors ? coverColors[1] : "",
+          "--tw-gradient-from": coverColors ? coverColors[1] : "#1DB954",
         }}
-        className="lyricsBox bg-gradient-to-b from-black to-black text-white rounded-extraLarge shadow-lg overflow-hidden"
+        className="lyricsBox bg-gradient-to-b from-green-700 to-black text-white rounded-extraLarge shadow-lg overflow-hidden"
       >
         <div className="py-20 max-w-screen-2xl m-auto flex flex-col">
           <div className="flex items-center">
