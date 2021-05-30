@@ -125,6 +125,12 @@ export default function Home({
     setRoundComplete(true);
   };
 
+  const handleRoundRestart = () => {
+    setRoundComplete(false);
+    setActiveBlock(0);
+    setBlockTimes([new Date()]);
+  };
+
   return (
     <div className="p-12 bg-black">
       <Head>
@@ -261,6 +267,7 @@ export default function Home({
                     lyricsData={lyrics}
                     profanityHidden={profanityHidden}
                     blockStartTimes={blockTimes}
+                    restartRound={handleRoundRestart}
                   />
                 )}
               </Song>

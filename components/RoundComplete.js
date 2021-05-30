@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { lyricsToWords } from "../lib/utils.js";
 import differenceInSeconds from "date-fns/differenceInSeconds";
+import { FiRotateCcw } from "react-icons/fi";
 
 const RoundComplete = ({
   userTyping,
   lyricsData,
   profanityHidden,
   blockStartTimes,
+  restartRound,
 }) => {
   const [correct, setCorrect] = useState(0);
   const [mistyped, setMistyped] = useState(0);
@@ -17,6 +19,8 @@ const RoundComplete = ({
 
   const [durationByBlock, setDurationByBlock] = useState([]);
   const [roundDuration, setRoundDuration] = useState(0);
+
+  const retryButton = useRef(null);
 
   const calculateDurationByBlock = async (blockStartTimes) => {
     const blockDurations = [];
@@ -54,7 +58,9 @@ const RoundComplete = ({
 
         const correct = userBlock.filter(
           (w, i) =>
-            lyricBlock[i].length === w.length && lyricBlock[i] === w.join("")
+            lyricBlock.length !== 0 &&
+            lyricBlock[i].length === w.length &&
+            lyricBlock[i] === w.join("")
         );
 
         const skipped = lyricBlock.filter(
@@ -63,7 +69,8 @@ const RoundComplete = ({
 
         const mistyped = userBlock.filter(
           (w, i) =>
-            lyricBlock[i].length !== w.length || lyricBlock[i] !== w.join("")
+            (lyricBlock.length !== 0 && lyricBlock[i].length !== w.length) ||
+            lyricBlock[i] !== w.join("")
         );
 
         setCorrect((c) => {
@@ -90,6 +97,8 @@ const RoundComplete = ({
     };
 
     calculateStats();
+
+    retryButton.current.focus();
   }, [userTyping, lyricsData, blockStartTimes]);
 
   return (
@@ -111,6 +120,17 @@ const RoundComplete = ({
       <h2>Skipped words: {skipped}</h2>
       <h2>Incorrect words: {mistyped}</h2>
       <h2>Time taken: {roundDuration} (in seconds)</h2>
+
+      <div className="flex items-center mt-5">
+        <button
+          className="bg-purple-600 hover:bg-purple-700 text-white font-code py-2 px-4 rounded-full flex items-center transition-all ease-in-out focus:outline-none focus:ring ring-4 ring-purple-200 mr-5"
+          onClick={restartRound}
+          ref={retryButton}
+        >
+          <FiRotateCcw className="mr-2" /> Try again
+        </button>
+        <p className="opacity-75 ">Hit space to restart</p>
+      </div>
     </motion.div>
   );
 };
