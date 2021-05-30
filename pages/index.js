@@ -14,7 +14,6 @@ import PlaybackControl from "../components/PlaybackControl";
 import { getSession, signIn, signOut, useSession } from "next-auth/client";
 import { initPlayer, takeOver, loadSDK } from "../lib/initPlayer";
 import LyricsBlockPreview from "../components/LyricsBlockPreview";
-import differenceInSeconds from "date-fns/differenceInSeconds";
 
 export default function Home({
   defaultSongLyrics,
@@ -35,9 +34,7 @@ export default function Home({
   const [song, setSong] = useState(defaultSongMetadata);
   const [err, setErr] = useState(lyricsTransformErr);
 
-  const [startTime, setStartTime] = useState();
-  const [blockTimes, setBlockTimes] = useState([]);
-  const [roundDuration, setRoundDuration] = useState();
+  const [blockTimes, setBlockTimes] = useState();
 
   const [coverColors, setCoverColors] = useState([]);
 
@@ -63,7 +60,7 @@ export default function Home({
     setErr(null);
     setSong(song);
     setLyricsLoading(true);
-    setStartTime([]);
+    setBlockTimes([]);
 
     const songName = song.title.split(" by")[0];
     const artistName = song.title.split(" by")[1].substr(1);
@@ -117,14 +114,12 @@ export default function Home({
   };
 
   const handleBlockComplete = (userTypeForEachBlock) => {
-    setStartTime(new Date())
-    setBlockTimes([...blockTimes, differenceInSeconds(new Date(), startTime)]);
+    setBlockTimes((blockTimes) => [...blockTimes, new Date()]);
     setUserTypeByBlock((existing) => [...existing, userTypeForEachBlock]);
     setActiveBlock((i) => Math.min(i + 1, lyrics.filteredLyrics.length - 1));
   };
 
   const handleRoundComplete = (userTypeForEachBlock) => {
-    setRoundDuration(differenceInSeconds(new Date(), blockTimes[0]));
     setUserTypeByBlock((existing) => [...existing, userTypeForEachBlock]);
     setActiveBlock(0);
     setRoundComplete(true);
@@ -143,7 +138,7 @@ export default function Home({
         }}
         className="lyricsBox bg-gradient-to-b from-green-700 to-black text-white rounded-extraLarge shadow-lg overflow-hidden"
       >
-        <div className="py-20 max-w-screen-2xl m-auto flex flex-col">
+        <div className="p-20 max-w-screen-2xl m-auto flex flex-col">
           <div className="flex items-center">
             <Link href="/">
               <a className="text-5xl select-none mr-5">🎧</a>
@@ -204,7 +199,7 @@ export default function Home({
 
                 {!lyricsLoading && !roundComplete && (
                   <>
-                    {startTime ? (
+                    {blockTimes ? (
                       <Lyrics
                         lyricsData={lyrics}
                         activeBlock={activeBlock}
@@ -218,12 +213,11 @@ export default function Home({
                           tabIndex={0}
                           className="mr-auto my-10 mb-5 bg-gray-200 hover:bg-gray-300 transition ease-in-out px-10 py-2 text-purple-600 rounded-lg shadow-lg"
                           onClick={() => {
-                            setStartTime(new Date());
                             setBlockTimes([new Date()]);
                           }}
                         >
                           Start Typing
-                        </button> 
+                        </button>
                         <LyricsBlockPreview
                           lyricsData={lyrics}
                           activeBlock={0}
@@ -254,8 +248,7 @@ export default function Home({
                     userTyping={userTypeByBlock}
                     lyricsData={lyrics}
                     profanityHidden={profanityHidden}
-                    roundDuration={roundDuration}
-                    blockTimes={blockTimes}
+                    blockStartTimes={blockTimes}
                   />
                 )}
               </Song>
