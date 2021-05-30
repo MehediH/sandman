@@ -73,10 +73,13 @@ const RoundComplete = ({
         setSkipped((s) => s + skipped.length);
         setMistyped((m) => m + mistyped.length);
 
-        setWPMByBlock((wpmByBlock) => [
-          ...wpmByBlock,
-          Math.round(correct.length / (blockDurations[i] / 60)),
-        ]);
+        const wpmForBlock = Math.round(
+          correct.length / (blockDurations[i] / 60)
+        );
+
+        if (wpmForBlock >= 0) {
+          setWPMByBlock((wpmByBlock) => [...wpmByBlock, wpmForBlock]);
+        }
       }
 
       // cpm is char / (time / 60)

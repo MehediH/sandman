@@ -16,7 +16,7 @@ module.exports = {
       extraLarge: "50px",
     },
     fontFamily: {
-      dela: ["Dela Gothic One", "cursive"],
+      dela: ["Dela Gothic One", "monospace"],
       code: ["Inconsolata", "monospace"],
     },
   },

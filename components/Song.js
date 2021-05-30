@@ -1,11 +1,15 @@
 import { getSession } from "next-auth/client";
 import { useEffect, useState } from "react";
+import { MdKeyboardReturn, MdSpaceBar } from "react-icons/md";
+import Hint from "./Hint";
+import { motion } from "framer-motion";
 
 export default function Song({
   data,
   currentlyPlaying = false,
   setUri,
   children,
+  isTyping,
 }) {
   const [songData, setSongData] = useState();
   const [songFeatures, setSongFeatures] = useState({});
@@ -47,14 +51,32 @@ export default function Song({
 
   return (
     <div className="flex my-10 items-start">
-      <img
-        src={songData.albumArt}
-        alt={`Cover of ${songData.title}`}
-        width={320}
-        height={320}
-        draggable={false}
-        className="rounded-lg shadow-xl select-none"
-      />
+      <div className="w-80 flex flex-shrink-0 flex-col">
+        <img
+          src={songData.albumArt}
+          alt={`Cover of ${songData.title}`}
+          width={320}
+          height={320}
+          draggable={false}
+          className="rounded-lg shadow-xl select-none mb-5"
+        />
+
+        {isTyping && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <Hint keyName="Space" label="Move to next word/space">
+              <MdSpaceBar className="mr-1" />
+            </Hint>
+
+            <Hint keyName="Enter" label="Finish current round">
+              <MdKeyboardReturn className="mr-1" />
+            </Hint>
+          </motion.div>
+        )}
+      </div>
 
       <div className="flex flex-col ml-10">
         {currentlyPlaying && (

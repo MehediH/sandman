@@ -31,7 +31,6 @@ const Lyrics = memo(function Lyrics({
 
     // don't track typing when the user is searching
     if (e.target.tagName === "INPUT" && e.target.type === "text") return;
-
     // user is typing
     setIsTyping(true);
 

@@ -14,6 +14,7 @@ import PlaybackControl from "../components/PlaybackControl";
 import { getSession, signIn, signOut, useSession } from "next-auth/client";
 import { initPlayer, takeOver, loadSDK } from "../lib/initPlayer";
 import LyricsBlockPreview from "../components/LyricsBlockPreview";
+import Image from "next/image";
 
 export default function Home({
   defaultSongLyrics,
@@ -60,7 +61,8 @@ export default function Home({
     setErr(null);
     setSong(song);
     setLyricsLoading(true);
-    setBlockTimes([]);
+    setBlockTimes(null);
+    setRoundComplete(false);
 
     const lyricsData = await fetch(`./api/getLyrics?songUrl=${song.url}`).then(
       (res) => res.text()
@@ -117,6 +119,7 @@ export default function Home({
   };
 
   const handleRoundComplete = (userTypeForEachBlock) => {
+    if (activeBlock === 0) return;
     setUserTypeByBlock((existing) => [...existing, userTypeForEachBlock]);
     setActiveBlock(0);
     setRoundComplete(true);
@@ -138,7 +141,13 @@ export default function Home({
         <div className="p-20 max-w-screen-2xl m-auto flex flex-col">
           <div className="flex items-center">
             <Link href="/">
-              <a className="text-5xl select-none mr-5">🎧</a>
+              <Image
+                src="/sandman.svg"
+                alt="me"
+                width="50"
+                height="50"
+                draggable="false"
+              />
             </Link>
             <Search selectSong={handleSongChange} />
 
@@ -176,7 +185,13 @@ export default function Home({
             </p>
           ) : (
             <>
-              <Song data={song} currentlyPlaying={true}>
+              <Song
+                data={song}
+                currentlyPlaying={true}
+                isTyping={
+                  blockTimes && blockTimes.length !== 0 && !roundComplete
+                }
+              >
                 <label
                   htmlFor="hideProfanity"
                   className="opacity-70 hover:opacity-100 transition-all cursor-pointer mt-2"
@@ -208,7 +223,7 @@ export default function Home({
                       <>
                         <button
                           tabIndex={0}
-                          className="mr-auto my-10 mb-5 bg-gray-200 hover:bg-gray-300 transition ease-in-out px-10 py-2 text-purple-600 rounded-lg shadow-lg"
+                          className="mr-auto my-10 mb-5 bg-gray-200 hover:bg-gray-300 transition ease-in-out px-10 py-2 text-purple-600 rounded-lg shadow-lg font-dela"
                           onClick={() => {
                             setBlockTimes([new Date()]);
                           }}

@@ -30,13 +30,13 @@ export default function Search({ selectSong }) {
   };
 
   return (
-    <div className="">
+    <div>
       <input
         placeholder="Search songs..."
         type="text"
         tabIndex="1"
         onChange={(e) => setSearch(e.target.value)}
-        className="text-black rounded-lg shadow-xl w-80"
+        className="text-black rounded-lg shadow-xl w-80 ml-5"
         onKeyDown={(e) => {
           if (e.key === "Escape") setResults([]);
         }}
