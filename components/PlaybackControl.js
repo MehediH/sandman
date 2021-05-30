@@ -2,7 +2,8 @@ import { takeOver } from "../lib/initPlayer";
 
 export default function PlaybackControl({ access_token, playing, uri }) {
 	const handleClick = () => {
-		if (!playing?.tracks) takeOver(access_token, playing.deviceId, uri);
+		if (!playing?.tracks || playing.tracks.uri != uri)
+			takeOver(access_token, playing.deviceId, uri);
 		window.player.togglePlay();
 	};
 
