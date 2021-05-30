@@ -40,9 +40,8 @@ const Lyrics = memo(function Lyrics({
 
     let typingShakeTimeout;
 
-    if (keyCode === 13) {
+    if (keyCode === 13 && activeBlock != 0) {
       setIsRoundComplete(true);
-
       return;
     }
 
