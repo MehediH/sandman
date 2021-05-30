@@ -62,12 +62,9 @@ export default function Home({
     setLyricsLoading(true);
     setBlockTimes([]);
 
-    const songName = song.title.split(" by")[0];
-    const artistName = song.title.split(" by")[1].substr(1);
-
-    const lyricsData = await fetch(
-      `./api/getLyrics?songName=${songName}&artistName=${artistName}`
-    ).then((res) => res.text());
+    const lyricsData = await fetch(`./api/getLyrics?songUrl=${song.url}`).then(
+      (res) => res.text()
+    );
 
     if (!lyricsData) return;
 

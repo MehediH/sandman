@@ -99,7 +99,7 @@ const RoundComplete = ({
       <h1 className="text-3xl font-dela">Round Complete</h1>
 
       {wpmByBlock.map((x, i) => {
-        return <h2 key={i}>{`Block ${i + 1}: ${x} WPM`}</h2>;
+        return <h2 key={`block=${i}`}>{`Block ${i + 1}: ${x} WPM`}</h2>;
       })}
 
       {/* THIS SHIT DOESN'T WORK */}

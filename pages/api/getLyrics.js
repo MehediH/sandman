@@ -1,30 +1,42 @@
-import { getLyrics } from 'genius-lyrics-api';
+import { getLyrics } from "genius-lyrics-api";
 
-export const getLyricsFromGenius = async ( songName, artistName ) => {
-	const options = {
-		apiKey: process.env.NEXT_PUBLIC_GENIUS_KEY,
-		title: songName ? songName : "",
-		artist: artistName ? artistName : "",
-		optimizeQuery: true
-	};
+export const getLyricsFromGenius = async (songName, artistName, songUrl) => {
+  const options = {
+    apiKey: process.env.NEXT_PUBLIC_GENIUS_KEY,
+    title: songName ? songName : "",
+    artist: artistName ? artistName : "",
+    optimizeQuery: true,
+  };
 
-	try{
-		return { data: await getLyrics(options), err: null };
-	} catch(err){
-		return { data: null, err: err.message };
-	}
-}
+  try {
+    return {
+      data: await getLyrics(songName || artistName ? options : songUrl),
+      err: null,
+    };
+  } catch (err) {
+    return { data: null, err: err.message };
+  }
+};
 
 export default async function getLyricsEndpoint(req, res) {
-	const { songName, artistName } = req.query;
+  const { songName, artistName, songUrl } = req.query;
 
-	if(!songName) return res.status(400).send("'songName' parameter is missing for the request.");
+  if ((!songName || !artistName) && !songUrl)
+    return res
+      .status(400)
+      .send(
+        "Required parameters `songName`, `artistName`, or `songUrl` is missing for the request."
+      );
 
-	const { data: songLyrics, err } = await getLyricsFromGenius(songName, artistName);
+  const { data: songLyrics, err } = await getLyricsFromGenius(
+    songName,
+    artistName,
+    songUrl
+  );
 
-	if(err){
-        return res.status(400).send(err);
-    }
+  if (err) {
+    return res.status(400).send(err);
+  }
 
-	res.status(200).send(songLyrics);
+  res.status(200).send(songLyrics);
 }
