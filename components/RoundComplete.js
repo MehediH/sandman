@@ -83,7 +83,7 @@ const RoundComplete = ({
       // wpm is char / 5
       const roundDuration = blockDurations.reduce((a, b) => a + b, 0);
       setRoundDuration(roundDuration);
-      setTotalWPM(totalCorrect / (roundDuration / 60));
+      setTotalWPM(Math.round(totalCorrect / (roundDuration / 60)));
     };
 
     calculateStats();

@@ -224,7 +224,7 @@ const Lyrics = memo(function Lyrics({
                 />
               ) : null}
               <div
-                className={`inline mr-1.5 ${
+                className={`flex items-center mr-1.5 ${
                   wordIndex === userTyping.length - 1 ? "active" : ""
                 }`}
               >
@@ -270,7 +270,7 @@ const Lyrics = memo(function Lyrics({
       </ul>
       {caretPosition && (
         <div
-          className={`w-1 h-5  bg-gray-200 rounded-xl absolute ${
+          className={`w-1 h-5 mt-1 bg-gray-200 rounded-extraLarge absolute ${
             !isTyping ? "animate-pulse" : ""
           } ${cursorShake ? "animate-shake" : ""}`}
           style={{
