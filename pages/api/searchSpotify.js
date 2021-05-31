@@ -1,4 +1,5 @@
 import { getSession } from "next-auth/client";
+import { getSpotifyAccessToken } from "../../lib/spotifyAuth";
 
 export const searchSpotify = async (q, access_token) => {
   try {
@@ -36,11 +37,17 @@ export const searchSpotify = async (q, access_token) => {
 export default async function spotifySearchEndpoint(req, res) {
   const { q } = req.query;
   const session = await getSession({ req });
+  let access_token = session?.user?.access_token;
 
   if (!q)
     return res.status(400).send("'q' parameter is missing for the request.");
 
-  const { data, err } = await searchSpotify(q, session.user.access_token);
+  if (!access_token) access_token = await getSpotifyAccessToken();
+
+  if (!access_token)
+    return res.status(401).send("Could not authenticate with Spotify API.");
+
+  const { data, err } = await searchSpotify(q, access_token);
 
   if (err) {
     return res.status(400).send({ err });
