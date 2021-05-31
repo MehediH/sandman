@@ -4,6 +4,7 @@ import { FaSpotify } from "react-icons/fa";
 import Hint from "./Hint";
 import { motion } from "framer-motion";
 import PlaybackControl from "./PlaybackControl";
+import { getSession, signIn } from "next-auth/client";
 
 export default function Song({
   data,
@@ -17,6 +18,8 @@ export default function Song({
   const [existsOnSpotify, setExistsOnSpotify] = useState(false);
   const [requestedSpotifyPlayback, setRequestedSpotifyPlayback] =
     useState(false);
+
+  const [playbackPrompt, setPlaybackPrompt] = useState("Login to Spotify");
 
   useEffect(() => {
     setSongData(data);
@@ -45,7 +48,24 @@ export default function Song({
     };
 
     getSpotifyData();
+
+    getSession().then(async (session) => {
+      if (session) {
+        setPlaybackPrompt("Listen on Spotify");
+      }
+    });
   }, [data]);
+
+  const startPlayback = async () => {
+    getSession().then(async (session) => {
+      if (!session) {
+        signIn("spotify");
+        return;
+      }
+
+      setRequestedSpotifyPlayback(true);
+    });
+  };
 
   if (!songData) return null;
 
@@ -73,10 +93,10 @@ export default function Song({
           <div className="flex justify-betwen items-center">
             <button
               className="font-dela bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-full flex flex-basis items-center place-self-start transition-all ease-in-out focus:outline-none focus:ring-4 ring-green-200 mr-5 my-2"
-              onClick={() => setRequestedSpotifyPlayback(true)}
+              onClick={startPlayback}
             >
               <FaSpotify className="mr-2" size={20} />
-              Play on Spotify
+              {playbackPrompt}
             </button>
             <span className="font-dela flex justify-end flex-grow opacity-75">
               {songFeatures && songFeatures.tempo
