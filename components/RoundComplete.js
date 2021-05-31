@@ -84,7 +84,7 @@ const RoundComplete = ({
           correct.length / (blockDurations[i] / 60)
         );
 
-        if (wpmForBlock >= 0) {
+        if (wpmForBlock >= 0 && wpmForBlock != Infinity) {
           setWPMByBlock((wpmByBlock) => [...wpmByBlock, wpmForBlock]);
         }
       }

@@ -223,32 +223,16 @@ export default function Home({
 
                 {!lyricsLoading && !roundComplete && (
                   <>
-                    {blockTimes ? (
-                      <Lyrics
-                        lyricsData={lyrics}
-                        activeBlock={activeBlock}
-                        profanityHidden={profanityHidden}
-                        blockComplete={handleBlockComplete}
-                        finishRound={handleRoundComplete}
-                      />
-                    ) : (
-                      <>
-                        <button
-                          tabIndex={0}
-                          className="mr-auto my-10 mb-5 bg-gray-200 hover:bg-gray-300 transition ease-in-out px-10 py-2 text-purple-600 rounded-lg shadow-lg font-dela"
-                          onClick={() => {
-                            setBlockTimes([new Date()]);
-                          }}
-                        >
-                          Start Typing
-                        </button>
-                        <LyricsBlockPreview
-                          lyricsData={lyrics}
-                          activeBlock={0}
-                          profanityHidden={profanityHidden}
-                        />
-                      </>
-                    )}
+                    <Lyrics
+                      lyricsData={lyrics}
+                      activeBlock={activeBlock}
+                      profanityHidden={profanityHidden}
+                      blockComplete={handleBlockComplete}
+                      finishRound={handleRoundComplete}
+                      startInitialTimer={() => {
+                        setBlockTimes([new Date()]);
+                      }}
+                    />
 
                     {lyrics.filteredLyrics
                       .slice(activeBlock + 1)

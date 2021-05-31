@@ -8,6 +8,7 @@ const Lyrics = memo(function Lyrics({
   profanityHidden,
   blockComplete,
   finishRound,
+  startInitialTimer,
 }) {
   const [lyricsByWord, setLyricsByWord] = useState([]);
 
@@ -151,6 +152,16 @@ const Lyrics = memo(function Lyrics({
     }
   };
 
+  const handleInitialStart = (e) => {
+    // don't track typing when the user is searching
+    if (e.target.tagName === "INPUT" && e.target.type === "text") return;
+
+    if (userTyping.length === 1 && userTyping[0].length === 0) {
+      startInitialTimer();
+      window.removeEventListener("keydown", handleInitialStart);
+    }
+  };
+
   useEffect(() => {
     if (isBlockComplete) blockComplete(userTyping);
     if (isRoundComplete) finishRound(userTyping);
@@ -183,12 +194,19 @@ const Lyrics = memo(function Lyrics({
 
     window.addEventListener("keydown", proxyKeyPress);
 
+    if (activeBlock === 0)
+      window.addEventListener("keydown", handleInitialStart);
+
     window.addEventListener("resize", moveCursor);
 
     typingObserver.current = trackTyping();
 
     return () => {
       window.removeEventListener("keydown", proxyKeyPress);
+
+      if (activeBlock === 0)
+        window.removeEventListener("keydown", handleInitialStart);
+
       window.removeEventListener("resize", moveCursor);
 
       if (typingObserver.current) {
