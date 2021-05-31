@@ -1,4 +1,4 @@
-import { getSession } from "next-auth/client";
+import { getSpotifyAccessToken } from "../../lib/spotifyAuth";
 
 export const audioFeaturesFromSpotify = async (id, bearer) => {
   try {
@@ -21,23 +21,19 @@ export const audioFeaturesFromSpotify = async (id, bearer) => {
 // e.g. "Phoenix by A$AP Rocky"
 export default async function getSpotifyFeaturesEndpoint(req, res) {
   const { id } = req.query;
-  const session = await getSession({ req });
+  const access_token = await getSpotifyAccessToken(req);
 
   if (!id)
     return res.status(400).send("'id' parameter is missing for the request.");
 
-  if (session) {
-    // Signed in
-    const { data, err } = await audioFeaturesFromSpotify(
-      id,
-      session.user.access_token
-    );
-    if (err) {
-      return res.status(400).send({ err: err });
-    }
-    return res.status(200).send({ data });
-  } else {
-    // Not Signed in
-    return res.status(401);
+  if (!access_token)
+    return res.status(401).send("Could not authenticate with Spotify API.");
+
+  const { data, err } = await audioFeaturesFromSpotify(id, access_token);
+
+  if (err) {
+    return res.status(400).send({ err });
   }
+
+  return res.status(200).send({ data });
 }

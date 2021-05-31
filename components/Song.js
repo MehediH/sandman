@@ -1,4 +1,3 @@
-import { getSession } from "next-auth/client";
 import { useEffect, useState } from "react";
 import { MdKeyboardReturn, MdSpaceBar } from "react-icons/md";
 import Hint from "./Hint";
@@ -18,11 +17,11 @@ export default function Song({
     setSongData(data);
 
     const getSpotifyData = async () => {
-      const session = await getSession();
-      if (!session) {
-        setSongFeatures(null);
-        return;
-      }
+      // const session = await getSession();
+      // if (!session) {
+      //   setSongFeatures(null);
+      //   return;
+      // }
       const { data: searchForSong, err } = await fetch(
         `/api/searchSpotify?q=${data.title}`
       ).then((res) => res.json());
