@@ -17,11 +17,6 @@ export default function Song({
     setSongData(data);
 
     const getSpotifyData = async () => {
-      // const session = await getSession();
-      // if (!session) {
-      //   setSongFeatures(null);
-      //   return;
-      // }
       const { data: searchForSong, err } = await fetch(
         `/api/searchSpotify?q=${data.title}`
       ).then((res) => res.json());
@@ -79,16 +74,18 @@ export default function Song({
 
       <div className="flex flex-col ml-10">
         {currentlyPlaying && (
-          <span className="opacity-75">Currently Typing</span>
+          <span className="opacity-75 font-code">Currently Typing</span>
         )}
         <h2 className="text-4xl font-dela">{songData.title.split(" by")[0]}</h2>
-        <h2 className="text-md mt-2">
+        <h2 className="text-md mt-2 font-code">
           by {songData.title.split(" by")[1].substr(1)}
         </h2>
 
-        {songFeatures && songFeatures.tempo && (
-          <span>{Math.round(songFeatures.tempo)} BPM</span>
-        )}
+        <span className="font-dela">
+          {songFeatures && songFeatures.tempo
+            ? `${Math.round(songFeatures.tempo)} BPM`
+            : "Getting BPM..."}
+        </span>
 
         {children}
       </div>

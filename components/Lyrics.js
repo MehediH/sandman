@@ -139,13 +139,15 @@ const Lyrics = memo(function Lyrics({
     const activeElem = lyricsContainer.current.querySelectorAll(".active")[0];
     const lastChar = lyricsContainer.current.querySelectorAll(".lastChar")[0];
 
-    let pos =
-      lastChar?.getBoundingClientRect() || activeElem?.getBoundingClientRect();
-
     if (lastChar) {
-      setCaretPosition({ x: pos.x + pos.width, y: pos.y });
+      let pos = lastChar.getBoundingClientRect();
+
+      setCaretPosition({
+        x: lastChar.offsetLeft + pos.width,
+        y: lastChar.offsetTop,
+      });
     } else if (activeElem) {
-      setCaretPosition({ x: pos.x, y: pos.y });
+      setCaretPosition({ x: activeElem.offsetLeft, y: activeElem.offsetTop });
     }
   };
 
@@ -207,7 +209,7 @@ const Lyrics = memo(function Lyrics({
   return (
     <div className="text-xl font-code">
       {lyricsData && lyricsData.filteredLyrics && (
-        <span className="block my-5">
+        <span className="block my-5 font-dela tracking-wider">
           {lyricsData.filteredLyrics[activeBlock].block}
         </span>
       )}

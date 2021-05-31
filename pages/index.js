@@ -1,6 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Lyrics from "../components/Lyrics";
 import Search from "../components/search";
 import RoundComplete from "../components/RoundComplete";
@@ -10,7 +10,7 @@ import { searchSongsOnGenius } from "./api/searchSongs";
 import { cleanLyricsIntoArray } from "../lib/utils.js";
 import LyricsPlaceholder from "../components/LyricsPlaceholder";
 import PlaybackControl from "../components/PlaybackControl";
-
+import { motion } from "framer-motion";
 import { getSession, signIn, signOut, useSession } from "next-auth/client";
 import { initPlayer, takeOver, loadSDK } from "../lib/initPlayer";
 import LyricsBlockPreview from "../components/LyricsBlockPreview";
@@ -132,29 +132,35 @@ export default function Home({
   };
 
   return (
-    <div className="p-12 bg-black">
+    <div className="p-12 bg-black overflow-hidden">
       <Head>
         <title>sandman</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div
+      <motion.div
         style={{
           "--tw-gradient-from": coverColors ? coverColors[1] : "#1DB954",
         }}
         className="lyricsBox bg-gradient-to-b from-green-700 to-black text-white rounded-extraLarge shadow-lg overflow-hidden"
+        initial={{ y: "100vh", opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: "100vh", opacity: 0 }}
+        transition={{
+          delay: 0.5,
+          y: { type: "spring", stiffness: 40 },
+          default: { duration: 2 },
+        }}
       >
         <div className="p-20 max-w-screen-2xl m-auto flex flex-col">
           <div className="flex items-center">
-            <Link href="/">
-              <Image
-                src="/sandman.svg"
-                alt="me"
-                width="50"
-                height="50"
-                draggable="false"
-              />
-            </Link>
+            <Image
+              src="/sandman.svg"
+              alt="me"
+              width="50"
+              height="50"
+              draggable="false"
+            />
             <Search selectSong={handleSongChange} />
 
             {!session && (
@@ -259,7 +265,12 @@ export default function Home({
                   </>
                 )}
 
-                {lyricsLoading && !roundComplete && <LyricsPlaceholder />}
+                {lyricsLoading && !roundComplete && (
+                  <LyricsPlaceholder
+                    vibrant={coverColors ? coverColors[0] : ""}
+                    darkVibrant={coverColors ? coverColors[1] : ""}
+                  />
+                )}
 
                 {!lyricsLoading && roundComplete && (
                   <RoundComplete
@@ -274,7 +285,7 @@ export default function Home({
             </>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
