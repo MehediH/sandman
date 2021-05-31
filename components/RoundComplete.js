@@ -123,7 +123,7 @@ const RoundComplete = ({
 
       <div className="flex items-center mt-5">
         <button
-          className="bg-purple-600 hover:bg-purple-700 text-white font-code py-2 px-4 rounded-full flex items-center transition-all ease-in-out focus:outline-none focus:ring ring-4 ring-purple-200 mr-5"
+          className="bg-purple-600 hover:bg-purple-700 text-white font-code py-2 px-4 rounded-full flex items-center transition-all ease-in-out focus:outline-none focus:ring-4 ring-purple-200 mr-5"
           onClick={restartRound}
           ref={retryButton}
         >

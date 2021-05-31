@@ -156,7 +156,15 @@ const Lyrics = memo(function Lyrics({
     // don't track typing when the user is searching
     if (e.target.tagName === "INPUT" && e.target.type === "text") return;
 
-    if (userTyping.length === 1 && userTyping[0].length === 0) {
+    const { keyCode } = e;
+    if (
+      ((keyCode >= 65 && keyCode <= 90) ||
+        (keyCode >= 48 && keyCode <= 57) ||
+        keyCode === 32 ||
+        keyCode === 8) &&
+      userTyping.length === 1 &&
+      userTyping[0].length === 0
+    ) {
       startInitialTimer();
       window.removeEventListener("keydown", handleInitialStart);
     }

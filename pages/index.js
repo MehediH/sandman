@@ -1,5 +1,4 @@
 import Head from "next/head";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import Lyrics from "../components/Lyrics";
 import Search from "../components/search";
@@ -9,7 +8,6 @@ import { getLyricsFromGenius } from "./api/getLyrics";
 import { searchSongsOnGenius } from "./api/searchSongs";
 import { cleanLyricsIntoArray } from "../lib/utils.js";
 import LyricsPlaceholder from "../components/LyricsPlaceholder";
-import PlaybackControl from "../components/PlaybackControl";
 import { motion } from "framer-motion";
 import { getSession, signIn, signOut, useSession } from "next-auth/client";
 import { initPlayer, takeOver, loadSDK } from "../lib/initPlayer";
@@ -40,7 +38,7 @@ export default function Home({
   const [coverColors, setCoverColors] = useState([]);
 
   useEffect(() => {
-    // startPlayer();
+    startPlayer();
 
     const getProminentColors = async () => {
       if (!song || !song.albumArt) return;
@@ -89,12 +87,7 @@ export default function Home({
   const startPlayer = (setupOnCall = false) => {
     getSession().then(async (session) => {
       if (!session) return;
-      initPlayer(
-        session.user.access_token,
-        updatePlaying,
-        stoppedPlaying,
-        setupOnCall
-      );
+      initPlayer(session.user.access_token, updatePlaying, setupOnCall);
       if (!setupOnCall) {
         loadSDK();
       }
@@ -103,13 +96,10 @@ export default function Home({
 
   const updatePlaying = (state, setupOnCall) => {
     setPlaying(state);
+
     if (setupOnCall) {
       takeOver(session.user.access_token, state.deviceId);
     }
-  };
-
-  const stoppedPlaying = () => {
-    setPlaying({ deviceSwitched: true });
   };
 
   const handleBlockComplete = (userTypeForEachBlock) => {
@@ -203,6 +193,7 @@ export default function Home({
                 isTyping={
                   blockTimes && blockTimes.length !== 0 && !roundComplete
                 }
+                playingState={playing}
               >
                 <label
                   htmlFor="hideProfanity"
