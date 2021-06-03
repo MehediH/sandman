@@ -87,7 +87,7 @@ export default function Home({
   const startPlayer = (setupOnCall = false) => {
     getSession().then(async (session) => {
       if (!session) return;
-      initPlayer(session.user.access_token, updatePlaying, setupOnCall);
+      initPlayer(session.user.refresh_token, updatePlaying, setupOnCall);
       if (!setupOnCall) {
         loadSDK();
       }
