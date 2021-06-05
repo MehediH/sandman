@@ -22,20 +22,19 @@ const options = {
       }
       return Promise.resolve(session);
     },
-    jwt: async (token, user, account, profile, isNewUser) => {
-      if (account) {
-        const now = new Date();
-        now.setHours(now.getHours() + 1);
+    jwt: async (token, user, account, profile) => {
+      if (account && user) {
         token.access_token = account.accessToken;
         token.refresh_token = account.refreshToken;
-        token.accessTokenExpires = now.getTime();
+        token.accessTokenExpires = Date.now() + account.expires_in * 1000;
         token.profile = profile;
       }
-      if (Date.now() > token?.accessTokenExpires) {
-        token.accessToken = await generateNewAccessToken(token.refreshToken);
+
+      if (Date.now() < token.accessTokenExpires) {
+        return token;
       }
 
-      return Promise.resolve(token);
+      return await generateNewAccessToken(token);
     },
   },
 };

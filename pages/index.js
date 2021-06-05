@@ -68,26 +68,33 @@ export default function Home({
 
     if (!lyricsData) return;
 
-    const {
-      lyrics,
-      filteredLyrics,
-      err: lyricsTransformErr,
-    } = cleanLyricsIntoArray(lyricsData);
+    try {
+      const {
+        lyrics,
+        filteredLyrics,
+        err: lyricsTransformErr,
+      } = cleanLyricsIntoArray(lyricsData);
 
-    if (lyricsTransformErr) {
+      if (lyricsTransformErr) {
+        setLyricsLoading(false);
+        setErr(lyricsTransformErr);
+        return;
+      }
+
+      setLyrics({ lyrics, filteredLyrics });
       setLyricsLoading(false);
-      setErr(lyricsTransformErr);
+    } catch (err) {
+      setLyricsLoading(false);
+      setErr(`Failed to transform lyrics`);
       return;
     }
-
-    setLyrics({ lyrics, filteredLyrics });
-    setLyricsLoading(false);
   };
 
   const startPlayer = (setupOnCall = false) => {
     getSession().then(async (session) => {
       if (!session) return;
-      initPlayer(session.user.refresh_token, updatePlaying, setupOnCall);
+
+      initPlayer(session.user.access_token, updatePlaying, setupOnCall);
       if (!setupOnCall) {
         loadSDK();
       }

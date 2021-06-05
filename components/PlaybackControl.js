@@ -183,7 +183,7 @@ const ProgressBar = ({
                 ? "0%"
                 : (progress / total) * 236,
             }}
-            className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-700"
+            className="pointer-events-none shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-700"
           ></div>
         </div>
       </div>
