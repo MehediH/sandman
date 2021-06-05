@@ -77,8 +77,9 @@ const RoundComplete = ({
 
         const mistypedWords = userBlock.filter(
           (w, i) =>
-            (lyricBlock.length !== 0 && lyricBlock[i].length !== w.length) ||
-            lyricBlock[i] !== w.join("")
+            ((lyricBlock.length !== 0 && lyricBlock[i].length !== w.length) ||
+              lyricBlock[i] !== w.join("")) &&
+            w.length != 0
         );
 
         const correctCharacters = userBlock.reduce((acc, currentWord, i) => {
