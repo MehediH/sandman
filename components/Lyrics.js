@@ -28,6 +28,7 @@ const Lyrics = memo(function Lyrics({
   const caretObserver = useRef(null);
 
   const lyricsAnimControl = useAnimation();
+  const cursorAnimControl = useAnimation();
 
   const handleUserKeyPress = useCallback((e, lyricsByWord) => {
     if (!mounted) return;
@@ -181,12 +182,14 @@ const Lyrics = memo(function Lyrics({
   };
 
   const animateAndCompleteBlock = async () => {
+    await cursorAnimControl.start({ opacity: 0 });
     await lyricsAnimControl.start({ y: -20, opacity: 0 });
     await lyricsAnimControl.start({ y: 20, opacity: 0 });
 
     blockComplete(userTyping);
 
     await lyricsAnimControl.start({ y: 0, opacity: 1 });
+    await cursorAnimControl.start({ opacity: 1 });
   };
 
   useEffect(() => {
@@ -255,69 +258,71 @@ const Lyrics = memo(function Lyrics({
   ]);
 
   return (
-    <motion.div className="text-xl font-code" animate={lyricsAnimControl}>
-      {lyricsData && lyricsData.filteredLyrics && (
-        <span className="block my-5 font-dela tracking-wider">
-          {lyricsData.filteredLyrics[activeBlock].block}
-        </span>
-      )}
-      <ul className="flex flex-wrap" ref={lyricsContainer}>
-        {lyricsByWord.map((word, wordIndex) => {
-          // we iterate through each word and show each character
-          return (
-            <React.Fragment key={wordIndex}>
-              {lineBreaks.includes(wordIndex) ? (
+    <div>
+      <motion.div className="text-xl font-code" animate={lyricsAnimControl}>
+        {lyricsData && lyricsData.filteredLyrics && (
+          <span className="block my-5 font-dela tracking-wider">
+            {lyricsData.filteredLyrics[activeBlock].block}
+          </span>
+        )}
+        <ul className="flex flex-wrap" ref={lyricsContainer}>
+          {lyricsByWord.map((word, wordIndex) => {
+            // we iterate through each word and show each character
+            return (
+              <React.Fragment key={wordIndex}>
+                {lineBreaks.includes(wordIndex) ? (
+                  <div
+                    style={{ flexBasis: "100%", flexShrink: 0, flexGrow: 0 }}
+                  />
+                ) : null}
                 <div
-                  style={{ flexBasis: "100%", flexShrink: 0, flexGrow: 0 }}
-                />
-              ) : null}
-              <div
-                className={`flex items-center mr-1.5 ${
-                  wordIndex === userTyping.length - 1 ? "active" : ""
-                }`}
-              >
-                {word.split("").map((char, charIndex) => {
-                  return (
-                    <span
-                      key={charIndex}
-                      className={`${
-                        userTyping?.length > 0 &&
-                        wordIndex <= userTyping.length - 1 &&
-                        charIndex < userTyping[wordIndex]?.length
-                          ? userTyping[wordIndex][charIndex] === char
-                            ? "opacity-100" // if char is correct in word
-                            : "opacity-100 text-red-200" // if not
-                          : "opacity-50"
-                      } ${
-                        wordIndex === userTyping.length - 1 &&
-                        charIndex === userTyping[wordIndex]?.length - 1
-                          ? "lastChar"
-                          : ""
-                      }`}
-                    >
-                      {char}
-                    </span>
-                  );
-                })}
-                {
-                  // display any additional characters the user types for a given word
-                  userTyping[wordIndex]?.length > word.length && (
-                    <span
-                      className={`opacity-100 text-red-200 ${
-                        wordIndex === userTyping.length - 1 ? "lastChar" : ""
-                      }`}
-                    >
-                      {userTyping[wordIndex].slice(word.length)}
-                    </span>
-                  )
-                }
-              </div>
-            </React.Fragment>
-          );
-        })}
-      </ul>
+                  className={`flex items-center mr-1.5 ${
+                    wordIndex === userTyping.length - 1 ? "active" : ""
+                  }`}
+                >
+                  {word.split("").map((char, charIndex) => {
+                    return (
+                      <span
+                        key={charIndex}
+                        className={`${
+                          userTyping?.length > 0 &&
+                          wordIndex <= userTyping.length - 1 &&
+                          charIndex < userTyping[wordIndex]?.length
+                            ? userTyping[wordIndex][charIndex] === char
+                              ? "opacity-100" // if char is correct in word
+                              : "opacity-100 text-red-200" // if not
+                            : "opacity-50"
+                        } ${
+                          wordIndex === userTyping.length - 1 &&
+                          charIndex === userTyping[wordIndex]?.length - 1
+                            ? "lastChar"
+                            : ""
+                        }`}
+                      >
+                        {char}
+                      </span>
+                    );
+                  })}
+                  {
+                    // display any additional characters the user types for a given word
+                    userTyping[wordIndex]?.length > word.length && (
+                      <span
+                        className={`opacity-100 text-red-200 ${
+                          wordIndex === userTyping.length - 1 ? "lastChar" : ""
+                        }`}
+                      >
+                        {userTyping[wordIndex].slice(word.length)}
+                      </span>
+                    )
+                  }
+                </div>
+              </React.Fragment>
+            );
+          })}
+        </ul>
+      </motion.div>
       {caretPosition && (
-        <div
+        <motion.div
           className={`w-1 h-5 mt-1 bg-gray-200 rounded-extraLarge absolute ${
             !isTyping ? "animate-pulse" : ""
           } ${cursorShake ? "animate-shake" : ""}`}
@@ -326,9 +331,10 @@ const Lyrics = memo(function Lyrics({
             top: caretPosition.y,
             transition: "left 0.1s linear, top 0.1s linear",
           }}
-        ></div>
+          animate={cursorAnimControl}
+        ></motion.div>
       )}
-    </motion.div>
+    </div>
   );
 });
 
