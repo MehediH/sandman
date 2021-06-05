@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, memo, useRef } from "react";
 import { lyricsToWords } from "../lib/utils.js";
+import { animate, motion, useAnimation } from "framer-motion";
 
 // lyricsData is an Object with `lyrics` and `filteredLyrics`
 const Lyrics = memo(function Lyrics({
@@ -26,12 +27,16 @@ const Lyrics = memo(function Lyrics({
   const typingObserver = useRef(null);
   const caretObserver = useRef(null);
 
+  const lyricsAnimControl = useAnimation();
+
   const handleUserKeyPress = useCallback((e, lyricsByWord) => {
     if (!mounted) return;
+
     const { key, keyCode } = e;
 
     // don't track typing when the user is searching
     if (e.target.tagName === "INPUT" && e.target.type === "text") return;
+
     // user is typing
     setIsTyping(true);
 
@@ -41,7 +46,12 @@ const Lyrics = memo(function Lyrics({
 
     let typingShakeTimeout;
 
-    if (keyCode === 13 && activeBlock != 0) {
+    if (e.ctrlKey && keyCode === 13) {
+      setIsBlockComplete(true);
+      return;
+    }
+
+    if (keyCode === 13) {
       setIsRoundComplete(true);
       return;
     }
@@ -147,7 +157,7 @@ const Lyrics = memo(function Lyrics({
         x: lastChar.offsetLeft + pos.width,
         y: lastChar.offsetTop,
       });
-    } else if (activeElem) {
+    } else if (activeElem && activeElem.offsetLeft !== 0) {
       setCaretPosition({ x: activeElem.offsetLeft, y: activeElem.offsetTop });
     }
   };
@@ -170,8 +180,20 @@ const Lyrics = memo(function Lyrics({
     }
   };
 
+  const animateAndCompleteBlock = async () => {
+    await lyricsAnimControl.start({ y: -20, opacity: 0 });
+    await lyricsAnimControl.start({ y: 20, opacity: 0 });
+
+    blockComplete(userTyping);
+
+    await lyricsAnimControl.start({ y: 0, opacity: 1 });
+  };
+
   useEffect(() => {
-    if (isBlockComplete) blockComplete(userTyping);
+    if (isBlockComplete) {
+      animateAndCompleteBlock();
+    }
+
     if (isRoundComplete) finishRound(userTyping);
 
     setUserTyping([[]]);
@@ -233,7 +255,7 @@ const Lyrics = memo(function Lyrics({
   ]);
 
   return (
-    <div className="text-xl font-code">
+    <motion.div className="text-xl font-code" animate={lyricsAnimControl}>
       {lyricsData && lyricsData.filteredLyrics && (
         <span className="block my-5 font-dela tracking-wider">
           {lyricsData.filteredLyrics[activeBlock].block}
@@ -306,7 +328,7 @@ const Lyrics = memo(function Lyrics({
           }}
         ></div>
       )}
-    </div>
+    </motion.div>
   );
 });
 

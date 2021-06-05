@@ -11,7 +11,6 @@ import LyricsPlaceholder from "../components/LyricsPlaceholder";
 import { motion } from "framer-motion";
 import { getSession, signIn, signOut, useSession } from "next-auth/client";
 import { initPlayer, takeOver, loadSDK } from "../lib/initPlayer";
-import LyricsBlockPreview from "../components/LyricsBlockPreview";
 import Image from "next/image";
 
 export default function Home({
@@ -35,7 +34,7 @@ export default function Home({
   const [song, setSong] = useState(defaultSongMetadata);
   const [err, setErr] = useState(lyricsTransformErr);
 
-  const [blockTimes, setBlockTimes] = useState();
+  const [blockTimes, setBlockTimes] = useState([]);
 
   const [coverColors, setCoverColors] = useState([]);
 
@@ -123,7 +122,6 @@ export default function Home({
   };
 
   const handleRoundComplete = (userTypeForEachBlock) => {
-    if (activeBlock === 0) return;
     setUserTypeByBlock((existing) => [...existing, userTypeForEachBlock]);
     setActiveBlock(0);
     setRoundComplete(true);
@@ -170,7 +168,7 @@ export default function Home({
 
             {!session && (
               <button
-                className="ml-auto font-bold hover:opacity-80 focus:outline-none"
+                className="ml-auto hover:opacity-80 focus:outline-none"
                 onClick={() => signIn("spotify")}
               >
                 Sign in with Spotify
@@ -179,7 +177,7 @@ export default function Home({
             {session && (
               <div className="ml-auto flex-row-reverse flex">
                 <button
-                  className="font-bold ml-5 hover:opacity-50 focus:outline-none"
+                  className="ml-5 hover:opacity-50 focus:outline-none"
                   onClick={() => signOut()}
                 >
                   Sign out
@@ -209,6 +207,11 @@ export default function Home({
                   blockTimes && blockTimes.length !== 0 && !roundComplete
                 }
                 playingState={playing}
+                nextBlock={
+                  activeBlock + 1 < blockTitles.length
+                    ? blockTitles[activeBlock + 1]
+                    : null
+                }
               >
                 <label
                   htmlFor="hideProfanity"
@@ -228,31 +231,16 @@ export default function Home({
                 </label>
 
                 {!lyricsLoading && !roundComplete && (
-                  <>
-                    <Lyrics
-                      lyricsData={lyrics}
-                      activeBlock={activeBlock}
-                      profanityHidden={profanityHidden}
-                      blockComplete={handleBlockComplete}
-                      finishRound={handleRoundComplete}
-                      startInitialTimer={() => {
-                        setBlockTimes([new Date()]);
-                      }}
-                    />
-
-                    {lyrics.filteredLyrics
-                      .slice(activeBlock + 1)
-                      .map((block, index) => {
-                        return (
-                          <LyricsBlockPreview
-                            key={index}
-                            lyricsData={lyrics}
-                            activeBlock={activeBlock + index + 1}
-                            profanityHidden={profanityHidden}
-                          />
-                        );
-                      })}
-                  </>
+                  <Lyrics
+                    lyricsData={lyrics}
+                    activeBlock={activeBlock}
+                    profanityHidden={profanityHidden}
+                    blockComplete={handleBlockComplete}
+                    finishRound={handleRoundComplete}
+                    startInitialTimer={() => {
+                      setBlockTimes([new Date()]);
+                    }}
+                  />
                 )}
 
                 {lyricsLoading && !roundComplete && (

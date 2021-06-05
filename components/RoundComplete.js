@@ -27,6 +27,8 @@ const RoundComplete = ({
   const calculateDurationByBlock = async (blockStartTimes) => {
     const blockDurations = [];
 
+    if (!blockStartTimes) return [];
+
     await blockStartTimes.map((blockTime, i) => {
       if (i + 1 < blockStartTimes.length) {
         blockDurations.push(
@@ -111,8 +113,6 @@ const RoundComplete = ({
           (correctCharacters * (60 / blockDurations[i])) / 5
         );
 
-        console.log(correctCharacters, wpmForBlock, blockDurations[i]);
-
         if (wpmForBlock >= 0 && wpmForBlock != Infinity) {
           setWPMByBlock((wpmByBlock) => [
             ...wpmByBlock,
@@ -123,7 +123,9 @@ const RoundComplete = ({
 
       const roundDuration = blockDurations.reduce((a, b) => a + b, 0);
       setRoundDuration(roundDuration);
-      setTotalWPM(Math.round((totalCorrect * (60 / roundDuration)) / 5));
+
+      const wpm = Math.round((totalCorrect * (60 / roundDuration)) / 5);
+      setTotalWPM(Number.isNaN(wpm) ? 0 : wpm);
     };
 
     calculateStats();

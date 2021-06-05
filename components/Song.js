@@ -12,6 +12,7 @@ export default function Song({
   children,
   isTyping,
   playingState,
+  nextBlock,
 }) {
   const [songData, setSongData] = useState();
   const [songFeatures, setSongFeatures] = useState({});
@@ -115,13 +116,21 @@ export default function Song({
             exit={{ opacity: 0 }}
             className="mt-5"
           >
-            <Hint keyName="Space" label="Move to next word/space">
-              <MdSpaceBar className="mr-1" />
-            </Hint>
+            {nextBlock && (
+              <div className="inline-flex opacity-75 border-2 border-gray-200 py-2 px-4 text-sm rounded-md">
+                Coming up next: {nextBlock}
+              </div>
+            )}
 
-            <Hint keyName="Enter" label="Finish current round">
-              <MdKeyboardReturn className="mr-1" />
-            </Hint>
+            <div className="flex flex-col mt-5">
+              <Hint keyName="Space" label="Move to next word/block">
+                <MdSpaceBar className="mr-1" />
+              </Hint>
+
+              <Hint keyName="Enter" label="Finish current round">
+                <MdKeyboardReturn className="mr-1" />
+              </Hint>
+            </div>
           </motion.div>
         )}
       </div>
