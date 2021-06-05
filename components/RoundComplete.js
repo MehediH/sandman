@@ -7,15 +7,17 @@ import { FiRotateCcw } from "react-icons/fi";
 const RoundComplete = ({
   userTyping,
   lyricsData,
+  blockTitles,
   profanityHidden,
   blockStartTimes,
   restartRound,
 }) => {
-  const [correct, setCorrect] = useState(0);
-  const [mistyped, setMistyped] = useState(0);
-  const [skipped, setSkipped] = useState(0);
+  const [correctWords, setCorrectWords] = useState(0);
+  const [mistypedWords, setMistypedWords] = useState(0);
+  const [skippedWords, setSkippedWords] = useState(0);
   const [totalWPM, setTotalWPM] = useState(0);
   const [wpmByBlock, setWPMByBlock] = useState([]);
+  const [correctChars, setCorrectChars] = useState(0);
 
   const [durationByBlock, setDurationByBlock] = useState([]);
   const [roundDuration, setRoundDuration] = useState(0);
@@ -35,7 +37,7 @@ const RoundComplete = ({
       }
     });
 
-    return blockDurations;
+    return blockDurations.map((t) => Math.max(1, t));
   };
 
   useEffect(() => {
@@ -56,50 +58,77 @@ const RoundComplete = ({
         const userBlock = userTyping[i];
         const lyricBlock = lyricsByWord[i];
 
-        const correct = userBlock.filter(
+        if (!userBlock || !lyricBlock) continue;
+
+        const correctWords = userBlock.filter(
           (w, i) =>
             lyricBlock.length !== 0 &&
             lyricBlock[i].length === w.length &&
             lyricBlock[i] === w.join("")
         );
 
-        const skipped = lyricBlock.filter(
-          (w, i) => i >= userBlock.length || userBlock[i]?.length === 0
+        const lastTypedWordIndex = userBlock
+          .map((w) => w.length != 0)
+          .lastIndexOf(true);
+
+        const skippedWords = userBlock.filter(
+          (w, i) => w.length === 0 && i < lastTypedWordIndex
         );
 
-        const mistyped = userBlock.filter(
+        const mistypedWords = userBlock.filter(
           (w, i) =>
             (lyricBlock.length !== 0 && lyricBlock[i].length !== w.length) ||
             lyricBlock[i] !== w.join("")
         );
 
-        setCorrect((c) => {
-          totalCorrect = c + correct.length;
-          return c + correct.length;
-        });
-        setSkipped((s) => s + skipped.length);
-        setMistyped((m) => m + mistyped.length);
+        const correctCharacters = userBlock.reduce((acc, currentWord, i) => {
+          const numOfCurrentCharsInWord = lyricBlock[i]
+            .split("")
+            .reduce((acc, currentLetter, letterIndex) => {
+              if (currentLetter === currentWord[letterIndex]) return acc + 1;
 
+              return acc;
+            }, 0);
+
+          return acc + numOfCurrentCharsInWord;
+        }, 0);
+
+        setCorrectChars((c) => {
+          totalCorrect = correctCharacters + c;
+
+          return correctCharacters + c;
+        });
+
+        setCorrectWords((c) => c + correctWords.length);
+
+        setSkippedWords((s) => s + skippedWords.length);
+
+        setMistypedWords((m) => m + mistypedWords.length);
+
+        // (result.correctChars * (60 / result.testDuration)) / 5
         const wpmForBlock = Math.round(
-          correct.length / (blockDurations[i] / 60)
+          (correctCharacters * (60 / blockDurations[i])) / 5
         );
 
+        console.log(correctCharacters, wpmForBlock, blockDurations[i]);
+
         if (wpmForBlock >= 0 && wpmForBlock != Infinity) {
-          setWPMByBlock((wpmByBlock) => [...wpmByBlock, wpmForBlock]);
+          setWPMByBlock((wpmByBlock) => [
+            ...wpmByBlock,
+            { id: blockTitles[i], wpm: wpmForBlock },
+          ]);
         }
       }
 
-      // cpm is char / (time / 60)
-      // wpm is char / 5
       const roundDuration = blockDurations.reduce((a, b) => a + b, 0);
       setRoundDuration(roundDuration);
-      setTotalWPM(Math.round(totalCorrect / (roundDuration / 60)));
+      setTotalWPM(Math.round((totalCorrect * (60 / roundDuration)) / 5));
     };
 
     calculateStats();
 
     retryButton.current.focus();
-  }, [userTyping, lyricsData, blockStartTimes]);
+  }, []);
 
   return (
     <motion.div
@@ -111,14 +140,13 @@ const RoundComplete = ({
       <h1 className="text-3xl font-dela">Round Complete</h1>
 
       {wpmByBlock.map((x, i) => {
-        return <h2 key={`block=${i}`}>{`Block ${i + 1}: ${x} WPM`}</h2>;
+        return <h2 key={`block=${i}`}>{`${x.id}: ${x.wpm} WPM`}</h2>;
       })}
 
-      {/* THIS SHIT DOESN'T WORK */}
       <h2>WPM: {totalWPM}</h2>
-      <h2>Correct words: {correct}</h2>
-      <h2>Skipped words: {skipped}</h2>
-      <h2>Incorrect words: {mistyped}</h2>
+      <h2>Correct words: {correctWords}</h2>
+      <h2>Skipped words: {skippedWords}</h2>
+      <h2>Incorrect words: {mistypedWords}</h2>
       <h2>Time taken: {roundDuration} (in seconds)</h2>
 
       <div className="flex items-center mt-5">

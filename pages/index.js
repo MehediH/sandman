@@ -24,6 +24,8 @@ export default function Home({
   const [profanityHidden, setProfanityHidden] = useState(true);
   const [lyrics, setLyrics] = useState(defaultSongLyrics);
   const [lyricsLoading, setLyricsLoading] = useState(false);
+  const [blockTitles, setBlockTitles] = useState([]);
+
   const [activeBlock, setActiveBlock] = useState(0);
   const [userTypeByBlock, setUserTypeByBlock] = useState([]);
   const [roundComplete, setRoundComplete] = useState(false);
@@ -53,6 +55,10 @@ export default function Home({
     };
 
     getProminentColors();
+
+    if (lyrics) {
+      setBlockTitles(lyrics.filteredLyrics.map((l) => l.block));
+    }
   }, [activeBlock, userTypeByBlock, song]);
 
   const handleSongChange = async (song) => {
@@ -82,6 +88,7 @@ export default function Home({
       }
 
       setLyrics({ lyrics, filteredLyrics });
+      setBlockTitles(lyrics.map((l) => l.block));
       setLyricsLoading(false);
     } catch (err) {
       setLyricsLoading(false);
@@ -126,6 +133,7 @@ export default function Home({
     setRoundComplete(false);
     setActiveBlock(0);
     setBlockTimes([new Date()]);
+    setUserTypeByBlock([]);
   };
 
   return (
@@ -258,6 +266,7 @@ export default function Home({
                   <RoundComplete
                     userTyping={userTypeByBlock}
                     lyricsData={lyrics}
+                    blockTitles={blockTitles}
                     profanityHidden={profanityHidden}
                     blockStartTimes={blockTimes}
                     restartRound={handleRoundRestart}

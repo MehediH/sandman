@@ -163,11 +163,11 @@ const ProgressBar = ({
       <div className="relative pt-1 flex-grow">
         <div className="flex mb-2 items-center justify-between">
           <div>
-            <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-green-700 bg-green-100">
+            <span className="select-none text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-green-700 bg-green-100">
               {displayedProgress}
             </span>
           </div>
-          <div className="text-right">
+          <div className="text-right select-none">
             <span className="text-xs font-semibold inline-block text-white">
               {displayedTotal}
             </span>
