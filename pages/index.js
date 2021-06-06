@@ -58,7 +58,17 @@ export default function Home({
     if (lyrics) {
       setBlockTitles(lyrics.filteredLyrics.map((l) => l.block));
     }
+
+    restoreProfanity();
   }, [activeBlock, userTypeByBlock, song, playing]);
+
+  const restoreProfanity = async () => {
+    const profanity = await localStorage.getItem("sandmanProfanity");
+
+    if (profanity === null) return;
+
+    setProfanityHidden(JSON.parse(profanity));
+  };
 
   const handleSongChange = async (newSong) => {
     setErr(null);
@@ -238,7 +248,14 @@ export default function Home({
                     id="hideProfanity"
                     className="rounded-sm mr-2"
                     onChange={() => {
-                      setProfanityHidden((h) => !h);
+                      setProfanityHidden((h) => {
+                        localStorage.setItem(
+                          "sandmanProfanity",
+                          JSON.stringify(!h)
+                        );
+
+                        return !h;
+                      });
                     }}
                     checked={profanityHidden}
                   />

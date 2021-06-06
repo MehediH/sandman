@@ -50,7 +50,8 @@ export default function Song({
         );
 
         if (
-          playingState?.track_window?.current_track?.uri !== songFeatures.uri
+          playingState?.track_window?.current_track?.uri !== songFeatures.uri &&
+          window.player
         ) {
           window.player.pause();
         }
