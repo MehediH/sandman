@@ -9,7 +9,7 @@ function MyApp({ Component, pageProps }) {
 	useEffect(() => {
 		setDark(window.matchMedia('(prefers-color-scheme: dark)').matches)
 		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-			setDark(e.matches ? "dark" : "light");
+			setDark(e.matches);
 		});
 	}, [])
 
