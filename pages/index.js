@@ -58,18 +58,18 @@ export default function Home({
     if (lyrics) {
       setBlockTitles(lyrics.filteredLyrics.map((l) => l.block));
     }
-  }, [activeBlock, userTypeByBlock, song]);
+  }, [activeBlock, userTypeByBlock, song, playing]);
 
-  const handleSongChange = async (song) => {
+  const handleSongChange = async (newSong) => {
     setErr(null);
-    setSong(song);
+    setSong(newSong);
     setLyricsLoading(true);
     setBlockTimes(null);
     setRoundComplete(false);
 
-    const lyricsData = await fetch(`./api/getLyrics?songUrl=${song.url}`).then(
-      (res) => res.text()
-    );
+    const lyricsData = await fetch(
+      `./api/getLyrics?songUrl=${newSong.url}`
+    ).then((res) => res.text());
 
     if (!lyricsData) return;
 
@@ -101,6 +101,7 @@ export default function Home({
       if (!session) return;
 
       initPlayer(session.user.access_token, updatePlaying, setupOnCall);
+
       if (!setupOnCall) {
         loadSDK();
       }
@@ -132,6 +133,10 @@ export default function Home({
     setActiveBlock(0);
     setBlockTimes([new Date()]);
     setUserTypeByBlock([]);
+
+    if (playing && playing.tracks && window.player != undefined) {
+      window.player.seek(-1);
+    }
   };
 
   return (
@@ -212,6 +217,7 @@ export default function Home({
                     ? blockTitles[activeBlock + 1]
                     : null
                 }
+                requestBlockComplete={handleBlockComplete}
               >
                 <label
                   htmlFor="hideProfanity"
@@ -269,7 +275,7 @@ export default function Home({
   );
 }
 
-export async function getStaticProps(context) {
+export async function getStaticProps() {
   const defaultSongName = "town crier",
     defaultSongArtist = "mavi";
 

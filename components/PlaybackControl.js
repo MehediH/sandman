@@ -9,7 +9,12 @@ import {
 } from "react-icons/fi";
 import { takeOver } from "../lib/initPlayer";
 
-export default function PlaybackControl({ playingState, uri, deviceSwitched }) {
+export default function PlaybackControl({
+  playingState,
+  uri,
+  deviceSwitched,
+  bpm,
+}) {
   const [duration, setDuration] = useState(0);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(50);
@@ -40,12 +45,14 @@ export default function PlaybackControl({ playingState, uri, deviceSwitched }) {
         if (duration === 0) setDuration(state.duration);
 
         setProgress(state.position);
+
+        window.player.getVolume().then((v) => setVolume(v * 100));
       });
     }, 1000);
 
-    window.player.getVolume().then((v) => setVolume(v * 100));
-
-    return () => clearInterval(checkState);
+    return () => {
+      clearInterval(checkState);
+    };
   }, []);
 
   const convertMS = (milliseconds) => {
@@ -107,10 +114,14 @@ export default function PlaybackControl({ playingState, uri, deviceSwitched }) {
   };
 
   return (
-    <div className="my-5">
+    <div className="mt-5">
       <span className="flex items-center mb-2 font-dela">
         <FaSpotify className="mr-2" size="20" /> Playing on Spotify
-        <p className="justify-end flex-grow flex opacity-75">80BPM</p>
+        {bpm && (
+          <p className="justify-end flex-grow flex opacity-75">
+            {Math.round(bpm)}BPM
+          </p>
+        )}
       </span>
       <div className="flex border-2 border-green-500 rounded-md shadow-lg self-start px-5 py-2 items-center w-80">
         <div className="flex flex-col flex-auto">
@@ -163,7 +174,7 @@ const ProgressBar = ({
       <div className="relative pt-1 flex-grow">
         <div className="flex mb-2 items-center justify-between">
           <div>
-            <span className="select-none text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-green-700 bg-green-100">
+            <span className="w-12 text-center select-none text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-green-700 bg-green-100">
               {displayedProgress}
             </span>
           </div>
