@@ -66,6 +66,7 @@ export default function Home({
     setLyricsLoading(true);
     setBlockTimes(null);
     setRoundComplete(false);
+    setActiveBlock(0);
 
     const lyricsData = await fetch(
       `./api/getLyrics?songUrl=${newSong.url}`
@@ -121,7 +122,13 @@ export default function Home({
   const handleBlockComplete = (userTypeForEachBlock) => {
     setBlockTimes((blockTimes) => [...blockTimes, new Date()]);
     setUserTypeByBlock((existing) => [...existing, userTypeForEachBlock]);
-    setActiveBlock((i) => Math.min(i + 1, lyrics.filteredLyrics.length - 1));
+    setActiveBlock((i) => {
+      const newBlock = Math.min(i + 1, lyrics.filteredLyrics.length - 1);
+
+      if (i + 1 === lyrics.filteredLyrics.length) handleRoundComplete();
+
+      return newBlock;
+    });
   };
 
   const handleRoundComplete = (userTypeForEachBlock) => {
