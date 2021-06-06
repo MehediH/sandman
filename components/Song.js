@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MdKeyboardReturn, MdSpaceBar } from "react-icons/md";
+import { MdFastForward, MdKeyboardReturn, MdSpaceBar } from "react-icons/md";
 import { FaSpotify } from "react-icons/fa";
 import Hint from "./Hint";
 import { motion } from "framer-motion";
@@ -13,18 +13,18 @@ export default function Song({
   isTyping,
   playingState,
   nextBlock,
+  requestBlockComplete,
 }) {
   const [songData, setSongData] = useState();
   const [songFeatures, setSongFeatures] = useState({});
   const [existsOnSpotify, setExistsOnSpotify] = useState(false);
   const [requestedSpotifyPlayback, setRequestedSpotifyPlayback] =
-    useState(false);
+    useState(true);
 
   const [playbackPrompt, setPlaybackPrompt] = useState("Login to Spotify");
 
   useEffect(() => {
     setSongData(data);
-    setRequestedSpotifyPlayback(false);
 
     const getSpotifyData = async () => {
       const { data: searchForSong, err } = await fetch(
@@ -45,6 +45,9 @@ export default function Song({
 
         setExistsOnSpotify(true);
         setSongFeatures(songFeatures);
+        setRequestedSpotifyPlayback(
+          playingState?.tracks?.current_track?.uri === songFeatures.uri
+        );
       }
     };
 
@@ -86,6 +89,7 @@ export default function Song({
           <PlaybackControl
             playingState={playingState}
             uri={songFeatures.uri}
+            bpm={songFeatures.tempo}
             deviceSwitched={() => setRequestedSpotifyPlayback(false)}
           />
         )}
@@ -99,7 +103,7 @@ export default function Song({
               <FaSpotify className="mr-2" size={20} />
               {playbackPrompt}
             </button>
-            <span className="font-dela flex justify-end flex-grow opacity-75">
+            <span className="font-dela text-sm flex justify-end flex-grow opacity-75">
               {songFeatures && songFeatures.tempo
                 ? `${Math.round(songFeatures.tempo)} BPM`
                 : existsOnSpotify
@@ -117,12 +121,19 @@ export default function Song({
             className="mt-5"
           >
             {nextBlock && (
-              <div className="inline-flex opacity-75 border-2 border-gray-200 py-2 px-4 text-sm rounded-md">
+              <div
+                className="flex opacity-75 border-2 border-gray-200 py-2 px-4 text-sm rounded-md cursor-pointer hover:opacity-100 transition ease-in-out"
+                onClick={requestBlockComplete}
+              >
                 Coming up next: {nextBlock}
               </div>
             )}
 
             <div className="flex flex-col mt-5">
+              <Hint keyName="Ctrl + Enter" label="Fast forward to next block">
+                <MdFastForward className="mr-1" />
+              </Hint>
+
               <Hint keyName="Space" label="Move to next word/block">
                 <MdSpaceBar className="mr-1" />
               </Hint>

@@ -28,7 +28,8 @@ const Lyrics = memo(function Lyrics({
   const caretObserver = useRef(null);
 
   const lyricsAnimControl = useAnimation();
-  const cursorAnimControl = useAnimation();
+  const caretAnimControl = useAnimation();
+  const [disableCaretPulse, setDisableCaretPulse] = useState(false);
 
   const handleUserKeyPress = useCallback((e, lyricsByWord) => {
     if (!mounted) return;
@@ -182,14 +183,15 @@ const Lyrics = memo(function Lyrics({
   };
 
   const animateAndCompleteBlock = async () => {
-    await cursorAnimControl.start({ opacity: 0 });
-    await lyricsAnimControl.start({ y: -20, opacity: 0 });
-    await lyricsAnimControl.start({ y: 20, opacity: 0 });
+    await caretAnimControl.start({ opacity: 0 }); // fade out caret
 
-    blockComplete(userTyping);
+    await lyricsAnimControl.start({ y: -20, opacity: 0 }); // fade out current block
+    await lyricsAnimControl.start({ y: 20, opacity: 0 }); // move back to position
 
-    await lyricsAnimControl.start({ y: 0, opacity: 1 });
-    await cursorAnimControl.start({ opacity: 1 });
+    blockComplete(userTyping); // fetch new block
+
+    await lyricsAnimControl.start({ y: 0, opacity: 1 }); // fade in new block
+    await caretAnimControl.start({ opacity: 1 }); // fade back caret
   };
 
   useEffect(() => {
@@ -331,7 +333,7 @@ const Lyrics = memo(function Lyrics({
             top: caretPosition.y,
             transition: "left 0.1s linear, top 0.1s linear",
           }}
-          animate={cursorAnimControl}
+          animate={caretAnimControl}
         ></motion.div>
       )}
     </div>

@@ -60,7 +60,7 @@ const RoundComplete = ({
         const userBlock = userTyping[i];
         const lyricBlock = lyricsByWord[i];
 
-        if (!userBlock || !lyricBlock) continue;
+        if (!Array.isArray(userBlock) || !Array.isArray(lyricBlock)) continue;
 
         const correctWords = userBlock.filter(
           (w, i) =>
@@ -142,8 +142,12 @@ const RoundComplete = ({
     >
       <h1 className="text-3xl font-dela">Round Complete</h1>
 
-      {wpmByBlock.map((x, i) => {
-        return <h2 key={`block=${i}`}>{`${x.id}: ${x.wpm} WPM`}</h2>;
+      {wpmByBlock.map((block, index) => {
+        return (
+          <h2
+            key={`${index}-${block.id}`}
+          >{`${block.id}: ${block.wpm} WPM`}</h2>
+        );
       })}
 
       <h2>WPM: {totalWPM}</h2>
