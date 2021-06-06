@@ -109,7 +109,9 @@ export default function Home({
   };
 
   const updatePlaying = (state, setupOnCall) => {
-    setPlaying(state);
+    setPlaying((existing) => {
+      return { ...existing, ...state };
+    });
 
     if (setupOnCall) {
       takeOver(session.user.access_token, state.deviceId);
@@ -134,7 +136,7 @@ export default function Home({
     setBlockTimes([new Date()]);
     setUserTypeByBlock([]);
 
-    if (playing && playing.tracks && window.player != undefined) {
+    if (playing && playing.track_window && window.player != undefined) {
       window.player.seek(-1);
     }
   };

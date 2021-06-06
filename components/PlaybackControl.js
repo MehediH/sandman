@@ -27,12 +27,17 @@ export default function PlaybackControl({
 
       const access_token = session.user.access_token;
 
-      if (!playingState?.tracks || playingState.tracks.uri != uri) {
+      if (
+        !playingState?.track_window ||
+        playingState.track_window.current_track.uri != uri
+      ) {
         takeOver(access_token, playingState.deviceId, uri);
       }
     });
 
     const checkState = setInterval(() => {
+      if (!window.player) return;
+
       window.player.getCurrentState().then((state) => {
         if (!state) {
           console.error(
@@ -47,6 +52,11 @@ export default function PlaybackControl({
         setProgress(state.position);
 
         window.player.getVolume().then((v) => setVolume(v * 100));
+
+        if (state?.track_window?.current_track?.uri !== uri) {
+          window.player.pause();
+          deviceSwitched();
+        }
       });
     }, 1000);
 

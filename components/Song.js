@@ -46,8 +46,14 @@ export default function Song({
         setExistsOnSpotify(true);
         setSongFeatures(songFeatures);
         setRequestedSpotifyPlayback(
-          playingState?.tracks?.current_track?.uri === songFeatures.uri
+          playingState?.track_window?.current_track?.uri === songFeatures.uri
         );
+
+        if (
+          playingState?.track_window?.current_track?.uri !== songFeatures.uri
+        ) {
+          window.player.pause();
+        }
       }
     };
 
