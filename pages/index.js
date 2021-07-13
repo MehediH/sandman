@@ -13,6 +13,7 @@ import { getSession, signIn, signOut, useSession } from "next-auth/client";
 import { initPlayer, takeOver, loadSDK } from "../lib/initPlayer";
 import Image from "next/image";
 
+
 export default function Home({
   defaultSongLyrics,
   defaultSongMetadata,
@@ -37,6 +38,10 @@ export default function Home({
   const [blockTimes, setBlockTimes] = useState([]);
 
   const [coverColors, setCoverColors] = useState([]);
+
+  
+
+
 
   useEffect(() => {
     startPlayer();

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { lyricsToWords } from "../lib/utils.js";
 import differenceInSeconds from "date-fns/differenceInSeconds";
 import { FiRotateCcw } from "react-icons/fi";
+import Chart from "../components/Chart"
 
 const RoundComplete = ({
   userTyping,
@@ -141,7 +142,7 @@ const RoundComplete = ({
       exit={{ opacity: 0 }}
     >
       <h1 className="text-3xl font-dela">Round Complete</h1>
-
+      <Chart data={wpmByBlock}/>
       {wpmByBlock.map((block, index) => {
         return (
           <h2
