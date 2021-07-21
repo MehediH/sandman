@@ -19,7 +19,7 @@ export default function Song({
   const [songFeatures, setSongFeatures] = useState({});
   const [existsOnSpotify, setExistsOnSpotify] = useState(false);
   const [requestedSpotifyPlayback, setRequestedSpotifyPlayback] =
-    useState(true);
+    useState(false);
 
   const [playbackPrompt, setPlaybackPrompt] = useState("Login to Spotify");
 

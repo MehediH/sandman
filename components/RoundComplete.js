@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { lyricsToWords } from "../lib/utils.js";
 import differenceInSeconds from "date-fns/differenceInSeconds";
 import { FiRotateCcw } from "react-icons/fi";
-import Chart from "../components/Chart"
+import RoundBreakdownChart from "./RoundBreakdownChart"
 
 const RoundComplete = ({
   userTyping,
@@ -134,6 +134,15 @@ const RoundComplete = ({
     retryButton.current.focus();
   }, []);
 
+  const MetricHighlight = ({ title, metricValue }) => {
+    return (
+      <li className="w-40 bg-green-500 rounded-lg overflow-hidden mr-2">
+        <span className="block bg-green-600 p-2 text-sm font-semibold">{title}</span>
+        <h4 className="p-2 font-bold">{metricValue}</h4>
+      </li>
+    )
+  }
+
   return (
     <motion.div
       className={"text-xl my-5"}
@@ -142,22 +151,8 @@ const RoundComplete = ({
       exit={{ opacity: 0 }}
     >
       <h1 className="text-3xl font-dela">Round Complete</h1>
-      <Chart data={wpmByBlock}/>
-      {wpmByBlock.map((block, index) => {
-        return (
-          <h2
-            key={`${index}-${block.id}`}
-          >{`${block.id}: ${block.wpm} WPM`}</h2>
-        );
-      })}
 
-      <h2>WPM: {totalWPM}</h2>
-      <h2>Correct words: {correctWords}</h2>
-      <h2>Skipped words: {skippedWords}</h2>
-      <h2>Incorrect words: {mistypedWords}</h2>
-      <h2>Time taken: {roundDuration} (in seconds)</h2>
-
-      <div className="flex items-center mt-5">
+      <div className="flex items-center my-5 flex-wrap">
         <button
           className="bg-purple-600 hover:bg-purple-700 text-white font-code py-2 px-4 rounded-full flex items-center transition-all ease-in-out focus:outline-none focus:ring-4 ring-purple-200 mr-5"
           onClick={restartRound}
@@ -165,8 +160,36 @@ const RoundComplete = ({
         >
           <FiRotateCcw className="mr-2" /> Try again
         </button>
-        <p className="opacity-75 ">Hit space to restart</p>
+        <p className="opacity-75 ">Hit space to restart :)</p>
       </div>
+
+      <ul className="flex mb-5">
+        <MetricHighlight title="WPM" metricValue={totalWPM} />
+        <MetricHighlight title="Correct Words" metricValue={correctWords} />
+        <MetricHighlight title="Skipped Words" metricValue={skippedWords} />
+        <MetricHighlight title="Incorrect Words" metricValue={mistypedWords} />
+        <MetricHighlight title="Time Taken" metricValue={roundDuration + "s"} />
+      </ul>
+
+      <h2 className="text-xl font-dela mb-2 mt-0">Per-Block Breakdown</h2>
+
+      <RoundBreakdownChart data={wpmByBlock.map((d, index) => ({ ...d, id: `B${index + 1}` }))} />
+
+      {wpmByBlock && <ul>
+        {wpmByBlock.map((block, index) => {
+          return (
+            <li
+              key={`${index}-${block.id}`}
+              className="text-base mb-1"
+            >
+              <span className="bg-gray-800 rounded-sm px-2 py-0.5 text-sm mr-2">{`B${index + 1}`}</span>
+              {`${block.id}: ${block.wpm} WPM`}
+            </li>
+          );
+        })}
+      </ul>}
+
+
     </motion.div>
   );
 };

@@ -39,10 +39,6 @@ export default function Home({
 
   const [coverColors, setCoverColors] = useState([]);
 
-  
-
-
-
   useEffect(() => {
     startPlayer();
 
@@ -164,7 +160,7 @@ export default function Home({
   };
 
   return (
-    <div className="p-12 bg-black overflow-hidden">
+    <div className="p-12">
       <Head>
         <title>sandman</title>
         <link rel="icon" href="/favicon.ico" />
@@ -174,7 +170,7 @@ export default function Home({
         style={{
           "--tw-gradient-from": coverColors ? coverColors[1] : "#1DB954",
         }}
-        className="lyricsBox bg-gradient-to-b from-green-700 to-black text-white rounded-extraLarge shadow-lg overflow-hidden"
+        className={`lyricsBox bg-gradient-to-b from-green-700 to-black text-white rounded-extraLarge shadow-lg ${roundComplete ? '' : 'overflow-hidden'}`}
         initial={{ y: "100vh", opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: "100vh", opacity: 0 }}
