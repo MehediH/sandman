@@ -16,7 +16,7 @@ class MyDocument extends Document {
             rel="stylesheet"
           />
         </Head>
-        <body class="bg-black h-screen">
+        <body className="bg-black h-screen" style={{ "overflow-y": "overlay" }}>
           <Main />
           <NextScript />
         </body>

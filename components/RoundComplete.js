@@ -66,6 +66,7 @@ const RoundComplete = ({
         const correctWords = userBlock.filter(
           (w, i) =>
             lyricBlock.length !== 0 &&
+
             lyricBlock[i].length === w.length &&
             lyricBlock[i] === w.join("")
         );

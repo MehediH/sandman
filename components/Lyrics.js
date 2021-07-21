@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, memo, useRef } from "react";
 import { lyricsToWords } from "../lib/utils.js";
-import { animate, motion, useAnimation } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 
 // lyricsData is an Object with `lyrics` and `filteredLyrics`
 const Lyrics = memo(function Lyrics({
@@ -29,7 +29,6 @@ const Lyrics = memo(function Lyrics({
 
   const lyricsAnimControl = useAnimation();
   const caretAnimControl = useAnimation();
-  const [disableCaretPulse, setDisableCaretPulse] = useState(false);
 
   const handleUserKeyPress = useCallback((e, lyricsByWord) => {
     if (!mounted) return;
@@ -160,7 +159,7 @@ const Lyrics = memo(function Lyrics({
         y: lastChar.offsetTop,
       });
     } else if (activeElem && activeElem.offsetLeft !== 0) {
-      setCaretPosition({ x: activeElem.offsetLeft, y: activeElem.offsetTop });
+      setCaretPosition(caretPosition => ({ x: activeElem.offsetLeft, y: activeElem.offsetTop }));
     }
   };
 
@@ -278,28 +277,25 @@ const Lyrics = memo(function Lyrics({
                   />
                 ) : null}
                 <div
-                  className={`flex items-center mr-1.5 ${
-                    wordIndex === userTyping.length - 1 ? "active" : ""
-                  }`}
+                  className={`flex items-center mr-1.5 ${wordIndex === userTyping.length - 1 ? "active" : ""
+                    }`}
                 >
                   {word.split("").map((char, charIndex) => {
                     return (
                       <span
                         key={charIndex}
-                        className={`${
-                          userTyping?.length > 0 &&
+                        className={`${userTyping?.length > 0 &&
                           wordIndex <= userTyping.length - 1 &&
                           charIndex < userTyping[wordIndex]?.length
-                            ? userTyping[wordIndex][charIndex] === char
-                              ? "opacity-100" // if char is correct in word
-                              : "opacity-100 text-red-200" // if not
-                            : "opacity-50"
-                        } ${
-                          wordIndex === userTyping.length - 1 &&
-                          charIndex === userTyping[wordIndex]?.length - 1
+                          ? userTyping[wordIndex][charIndex] === char
+                            ? "opacity-100" // if char is correct in word
+                            : "opacity-100 text-red-200" // if not
+                          : "opacity-50"
+                          } ${wordIndex === userTyping.length - 1 &&
+                            charIndex === userTyping[wordIndex]?.length - 1
                             ? "lastChar"
                             : ""
-                        }`}
+                          }`}
                       >
                         {char}
                       </span>
@@ -309,9 +305,8 @@ const Lyrics = memo(function Lyrics({
                     // display any additional characters the user types for a given word
                     userTyping[wordIndex]?.length > word.length && (
                       <span
-                        className={`opacity-100 text-red-200 ${
-                          wordIndex === userTyping.length - 1 ? "lastChar" : ""
-                        }`}
+                        className={`opacity-100 text-red-200 ${wordIndex === userTyping.length - 1 ? "lastChar" : ""
+                          }`}
                       >
                         {userTyping[wordIndex].slice(word.length)}
                       </span>
@@ -325,9 +320,8 @@ const Lyrics = memo(function Lyrics({
       </motion.div>
       {caretPosition && (
         <motion.div
-          className={`w-1 h-5 mt-1 bg-gray-200 rounded-extraLarge absolute ${
-            !isTyping ? "animate-pulse" : ""
-          } ${cursorShake ? "animate-shake" : ""}`}
+          className={`w-1 h-5 mt-1 bg-gray-200 rounded-extraLarge absolute ${!isTyping ? "animate-pulse" : ""
+            } ${cursorShake ? "animate-shake" : ""}`}
           style={{
             left: caretPosition.x,
             top: caretPosition.y,
