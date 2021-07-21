@@ -66,7 +66,7 @@ const RoundComplete = ({
         const correctWords = userBlock.filter(
           (w, i) =>
             lyricBlock.length !== 0 &&
-
+            lyricBlock[i] &&
             lyricBlock[i].length === w.length &&
             lyricBlock[i] === w.join("")
         );
@@ -81,12 +81,14 @@ const RoundComplete = ({
 
         const mistypedWords = userBlock.filter(
           (w, i) =>
-            ((lyricBlock.length !== 0 && lyricBlock[i].length !== w.length) ||
+            ((lyricBlock.length !== 0 && lyricBlock[i] && lyricBlock[i].length !== w.length) ||
               lyricBlock[i] !== w.join("")) &&
             w.length != 0
         );
 
         const correctCharacters = userBlock.reduce((acc, currentWord, i) => {
+          if (!lyricBlock[i]) return 0;
+
           const numOfCurrentCharsInWord = lyricBlock[i]
             .split("")
             .reduce((acc, currentLetter, letterIndex) => {

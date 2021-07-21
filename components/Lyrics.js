@@ -260,7 +260,7 @@ const Lyrics = memo(function Lyrics({
 
   return (
     <div>
-      <motion.div className="text-xl font-code" animate={lyricsAnimControl}>
+      <div className="text-xl font-code" animate={lyricsAnimControl}>
         {lyricsData && lyricsData.filteredLyrics && (
           <span className="block my-5 font-dela tracking-wider">
             {lyricsData.filteredLyrics[activeBlock].block}
@@ -317,7 +317,7 @@ const Lyrics = memo(function Lyrics({
             );
           })}
         </ul>
-      </motion.div>
+      </div>
       {caretPosition && (
         <motion.div
           className={`w-1 h-5 mt-1 bg-gray-200 rounded-extraLarge absolute ${!isTyping ? "animate-pulse" : ""
