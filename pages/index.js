@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import Lyrics from "../components/Lyrics";
-import Search from "../components/search";
+import Search from "../components/Search";
 import RoundComplete from "../components/RoundComplete";
 import Song from "../components/Song";
 import { getLyricsFromGenius } from "./api/getLyrics";
