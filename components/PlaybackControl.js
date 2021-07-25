@@ -195,7 +195,7 @@ const ProgressBar = ({
           </div>
         </div>
         <div
-          className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-green-400"
+          className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-green-400 cursor-pointer"
           onClick={onSeek}
         >
           <div
