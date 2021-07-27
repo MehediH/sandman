@@ -33,8 +33,6 @@ export default function Search({
           setSongRestoredFromSearch(true);
 
           if (i >= results.length) {
-            console.log(results);
-
             failedToRestoreFromSearch();
             return;
           }
@@ -57,7 +55,7 @@ export default function Search({
   };
 
   const selectSong = (song, index) => {
-    router.push(`?q=${search}&i=${index}`, null, {
+    router.replace(`?q=${search}&i=${index}`, null, {
       shallow: true,
       scroll: false,
     });
