@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import useDebounce from "../lib/useDebounce";
 import SearchResults from "./SearchResults";
+import { useRouter } from "next/router";
 
-export default function Search({ selectSong }) {
+export default function Search({ handleSongChange }) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [results, setResults] = useState([]);
+  const [songRestoredFromSearch, setSongRestoredFromSearch] = useState(false);
 
   const debouncedSearchTerm = useDebounce(search, 200);
 
@@ -17,8 +20,21 @@ export default function Search({ selectSong }) {
       } else {
         setResults([]);
       }
+
+      const restoreSongFromSearch = async () => {
+        const { q, i } = router.query;
+
+        if (q && i) {
+          const results = await searchSongs(q);
+
+          handleSongChange(results[i]);
+          setSongRestoredFromSearch(true);
+        }
+      };
+
+      if (!songRestoredFromSearch) restoreSongFromSearch();
     },
-    [debouncedSearchTerm] // Only call effect if debounced search term changes
+    [debouncedSearchTerm, router.query] // Only call effect if debounced search term changes
   );
 
   const searchSongs = async (query) => {
@@ -27,6 +43,15 @@ export default function Search({ selectSong }) {
     );
 
     return Object.values(response).slice(0, 5);
+  };
+
+  const selectSong = (song, index) => {
+    router.push(`?q=${search}&i=${index}`, null, {
+      shallow: true,
+      scroll: false,
+    });
+
+    handleSongChange(song);
   };
 
   return (

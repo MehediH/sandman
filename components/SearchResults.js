@@ -31,13 +31,13 @@ const SearchResults = ({ results, hideResults, selectSong }) => {
           key={result.id}
           tabIndex={index + 2}
           onClick={() => {
-            selectSong(result);
+            selectSong(result, index);
             hideResults();
           }}
           className="flex mb-3 focus:opacity-75 hover:opacity-75 cursor-pointer transition-all"
           onKeyDown={(e) => {
             if (e.code === "Space" || e.code === "Enter") {
-              selectSong(result);
+              selectSong(result, index);
               hideResults();
             }
           }}

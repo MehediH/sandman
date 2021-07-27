@@ -13,7 +13,6 @@ import { getSession, signIn, signOut, useSession } from "next-auth/client";
 import { initPlayer, takeOver, loadSDK } from "../lib/initPlayer";
 import Image from "next/image";
 
-
 export default function Home({
   defaultSongLyrics,
   defaultSongMetadata,
@@ -170,7 +169,9 @@ export default function Home({
         style={{
           "--tw-gradient-from": coverColors ? coverColors[1] : "#1DB954",
         }}
-        className={`lyricsBox bg-gradient-to-b from-green-700 to-black text-white rounded-extraLarge shadow-lg ${roundComplete ? '' : 'overflow-hidden'}`}
+        className={`lyricsBox bg-gradient-to-b from-green-700 to-black text-white rounded-extraLarge shadow-lg ${
+          roundComplete ? "" : "overflow-hidden"
+        }`}
         initial={{ y: "100vh", opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: "100vh", opacity: 0 }}
@@ -189,7 +190,7 @@ export default function Home({
               height="50"
               draggable="false"
             />
-            <Search selectSong={handleSongChange} />
+            <Search handleSongChange={handleSongChange} />
 
             {!session && (
               <button
