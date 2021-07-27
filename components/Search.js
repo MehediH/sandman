@@ -3,7 +3,10 @@ import useDebounce from "../lib/useDebounce";
 import SearchResults from "./SearchResults";
 import { useRouter } from "next/router";
 
-export default function Search({ handleSongChange }) {
+export default function Search({
+  handleSongChange,
+  failedToRestoreFromSearch,
+}) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [results, setResults] = useState([]);
@@ -27,8 +30,16 @@ export default function Search({ handleSongChange }) {
         if (q && i) {
           const results = await searchSongs(q);
 
-          handleSongChange(results[i]);
           setSongRestoredFromSearch(true);
+
+          if (i >= results.length) {
+            console.log(results);
+
+            failedToRestoreFromSearch();
+            return;
+          }
+
+          handleSongChange(results[i]);
         }
       };
 
@@ -52,6 +63,8 @@ export default function Search({ handleSongChange }) {
     });
 
     handleSongChange(song);
+    setResults([]);
+    setSearch(null);
   };
 
   return (
@@ -67,13 +80,12 @@ export default function Search({ handleSongChange }) {
         }}
       />
 
-      {results.length != 0 && (
-        <SearchResults
-          results={results}
-          hideResults={() => setResults([])}
-          selectSong={selectSong}
-        />
-      )}
+      <SearchResults
+        results={results}
+        query={search}
+        hideResults={() => setResults([])}
+        selectSong={selectSong}
+      />
     </div>
   );
 }

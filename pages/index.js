@@ -12,13 +12,15 @@ import { motion } from "framer-motion";
 import { getSession, signIn, signOut, useSession } from "next-auth/client";
 import { initPlayer, takeOver, loadSDK } from "../lib/initPlayer";
 import Image from "next/image";
+import { useRouter } from "next/router";
 
 export default function Home({
   defaultSongLyrics,
   defaultSongMetadata,
   lyricsTransformErr,
 }) {
-  const [session, loading] = useSession();
+  const router = useRouter();
+  const [session] = useSession();
 
   const [profanityHidden, setProfanityHidden] = useState(true);
   const [lyrics, setLyrics] = useState(defaultSongLyrics);
@@ -37,8 +39,14 @@ export default function Home({
   const [blockTimes, setBlockTimes] = useState([]);
 
   const [coverColors, setCoverColors] = useState([]);
+  const [restoredFromSearch, setRestoredFromSearch] = useState(false);
 
   useEffect(() => {
+    if (router.query.i && router.query.q && !restoredFromSearch) {
+      setSong(null);
+      setRestoredFromSearch(true);
+    }
+
     startPlayer();
 
     const getProminentColors = async () => {
@@ -60,7 +68,7 @@ export default function Home({
     }
 
     restoreProfanity();
-  }, [activeBlock, userTypeByBlock, song, playing]);
+  }, [activeBlock, userTypeByBlock, song, playing, router.query]);
 
   const restoreProfanity = async () => {
     const profanity = await localStorage.getItem("sandmanProfanity");
@@ -190,7 +198,10 @@ export default function Home({
               height="50"
               draggable="false"
             />
-            <Search handleSongChange={handleSongChange} />
+            <Search
+              handleSongChange={handleSongChange}
+              failedToRestoreFromSearch={() => setSong(defaultSongMetadata)}
+            />
 
             {!session && (
               <button
@@ -224,6 +235,8 @@ export default function Home({
                 Error message: {err}
               </code>
             </p>
+          ) : song === null ? (
+            <p className="my-20">Loading song from your search query...</p>
           ) : (
             <>
               <Song

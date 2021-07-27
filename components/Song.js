@@ -22,8 +22,10 @@ export default function Song({
     useState(false);
 
   const [playbackPrompt, setPlaybackPrompt] = useState("Login to Spotify");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     setSongData(data);
 
     const getSpotifyData = async () => {
@@ -61,10 +63,14 @@ export default function Song({
     getSpotifyData();
 
     getSession().then(async (session) => {
-      if (session) {
+      if (session && mounted) {
         setPlaybackPrompt("Listen on Spotify");
       }
     });
+
+    return () => {
+      setMounted(false);
+    };
   }, [data]);
 
   const startPlayback = async () => {
