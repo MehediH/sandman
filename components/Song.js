@@ -63,7 +63,7 @@ export default function Song({
     getSpotifyData();
 
     getSession().then(async (session) => {
-      if (session && mounted) {
+      if (session) {
         setPlaybackPrompt("Listen on Spotify");
       }
     });
