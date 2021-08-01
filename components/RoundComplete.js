@@ -157,7 +157,6 @@ const RoundComplete = ({
       exit={{ opacity: 0 }}
     >
       <h1 className="text-3xl font-dela">Round Complete</h1>
-      <RelatedSongs artistName={songData?.title.split(" by")[1]} handleSongChange={handleSongChange} />
       <div className="flex items-center my-5 flex-wrap">
         <button
           className="bg-purple-600 hover:bg-purple-700 text-white font-code py-2 px-4 rounded-full flex items-center transition-all ease-in-out focus:outline-none focus:ring-4 ring-purple-200 mr-5"
@@ -176,6 +175,8 @@ const RoundComplete = ({
         <MetricHighlight title="Incorrect Words" metricValue={mistypedWords} />
         <MetricHighlight title="Time Taken" metricValue={roundDuration + "s"} />
       </ul>
+
+      <RelatedSongs artistName={songData?.title.split(" by")[1]} handleSongChange={handleSongChange} />
 
       <h2 className="text-xl font-dela mb-2 mt-0">Per-Block Breakdown</h2>
 
