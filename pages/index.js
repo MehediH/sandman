@@ -177,9 +177,7 @@ export default function Home({
         style={{
           "--tw-gradient-from": coverColors ? coverColors[1] : "#1DB954",
         }}
-        className={`lyricsBox bg-gradient-to-b from-green-700 to-black text-white rounded-extraLarge shadow-lg ${
-          roundComplete ? "" : "overflow-hidden"
-        }`}
+        className={`lyricsBox bg-gradient-to-b from-green-700 to-black text-white rounded-extraLarge shadow-lg`}
         initial={{ y: "100vh", opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: "100vh", opacity: 0 }}
