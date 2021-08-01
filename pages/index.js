@@ -167,7 +167,7 @@ export default function Home({
   };
 
   return (
-    <div className="p-12 overflow-hidden">
+    <div className={`p-12 ${roundComplete ? "" : "overflow-hidden"}`}>
       <Head>
         <title>sandman</title>
         <link rel="icon" href="/favicon.ico" />
