@@ -69,7 +69,7 @@ const RoundBreakdownChart = ({ data }) => {
   }, [svgRef, data]);
 
   return (
-    <div id="chart" class="max-w-3xl overflow-x-auto mb-5 pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-green-500 hover:scrollbar-thumb-green-600 ">
+    <div id="chart" className="max-w-3xl overflow-x-auto mb-5 pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-green-500 hover:scrollbar-thumb-green-600 ">
       <svg ref={svgRef} />
     </div>
   );
