@@ -202,7 +202,6 @@ export default function Home({
               handleSongChange={handleSongChange}
               failedToRestoreFromSearch={() => setSong(defaultSongMetadata)}
             />
-
             {!session && (
               <button
                 className="ml-auto hover:opacity-80 focus:outline-none"
@@ -305,6 +304,8 @@ export default function Home({
                     profanityHidden={profanityHidden}
                     blockStartTimes={blockTimes}
                     restartRound={handleRoundRestart}
+                    handleSongChange={handleSongChange}
+                    songData={song}
                   />
                 )}
               </Song>
