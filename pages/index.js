@@ -167,7 +167,7 @@ export default function Home({
   };
 
   return (
-    <div className="px-12 pt-12 overflow-y-auto">
+    <div className="px-12 pt-12 overflow-hidden">
       <Head>
         <title>sandman</title>
         <link rel="icon" href="/favicon.ico" />
