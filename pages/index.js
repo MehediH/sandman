@@ -8,6 +8,7 @@ import { getLyricsFromGenius } from "./api/getLyrics";
 import { searchSongsOnGenius } from "./api/searchSongs";
 import { cleanLyricsIntoArray } from "../lib/utils.js";
 import LyricsPlaceholder from "../components/LyricsPlaceholder";
+import SongPlaceholder from "../components/SongPlaceholder";
 import { motion } from "framer-motion";
 import { getSession, signIn, signOut, useSession } from "next-auth/client";
 import { initPlayer, takeOver, loadSDK } from "../lib/initPlayer";
@@ -233,7 +234,10 @@ export default function Home({
               </code>
             </p>
           ) : song === null ? (
-            <p className="my-20">Loading song from your search query...</p>
+            <SongPlaceholder
+              vibrant={coverColors ? coverColors[0] : ""}
+              darkVibrant={coverColors ? coverColors[1] : ""}
+            />
           ) : (
             <>
               <Song
