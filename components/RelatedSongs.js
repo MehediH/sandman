@@ -50,7 +50,7 @@ export default function RelatedSongs({ artistName, handleSongChange }) {
     <div>
       <h2 className="text-xl font-dela mb-2 mt-0">Related Songs</h2>
 
-      <div className="flex">
+      <div className="flex flex-wrap">
         {relatedSongs.map((song, index) => (
           <SongCard index={index} key={song.id} song={song} />
         ))}

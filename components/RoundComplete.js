@@ -4,7 +4,7 @@ import { lyricsToWords } from "../lib/utils.js";
 import differenceInSeconds from "date-fns/differenceInSeconds";
 import { FiRotateCcw } from "react-icons/fi";
 import RelatedSongs from "../components/RelatedSongs";
-import RoundBreakdownChart from "./RoundBreakdownChart"
+import RoundBreakdownChart from "./RoundBreakdownChart";
 
 const RoundComplete = ({
   userTyping,
@@ -14,7 +14,7 @@ const RoundComplete = ({
   blockStartTimes,
   restartRound,
   handleSongChange,
-  songData
+  songData,
 }) => {
   const [correctWords, setCorrectWords] = useState(0);
   const [mistypedWords, setMistypedWords] = useState(0);
@@ -84,7 +84,9 @@ const RoundComplete = ({
 
         const mistypedWords = userBlock.filter(
           (w, i) =>
-            ((lyricBlock.length !== 0 && lyricBlock[i] && lyricBlock[i].length !== w.length) ||
+            ((lyricBlock.length !== 0 &&
+              lyricBlock[i] &&
+              lyricBlock[i].length !== w.length) ||
               lyricBlock[i] !== w.join("")) &&
             w.length != 0
         );
@@ -142,12 +144,14 @@ const RoundComplete = ({
 
   const MetricHighlight = ({ title, metricValue }) => {
     return (
-      <li className="w-40 bg-green-500 rounded-lg overflow-hidden mr-2">
-        <span className="block bg-green-600 p-2 text-sm font-semibold">{title}</span>
+      <li className="w-40 bg-green-500 rounded-lg overflow-hidden mr-2 mb-2">
+        <span className="block bg-green-600 p-2 text-sm font-semibold">
+          {title}
+        </span>
         <h4 className="p-2 font-bold">{metricValue}</h4>
       </li>
-    )
-  }
+    );
+  };
 
   return (
     <motion.div
@@ -168,7 +172,7 @@ const RoundComplete = ({
         <p className="opacity-75 ">Hit space to restart :)</p>
       </div>
 
-      <ul className="flex mb-5">
+      <ul className="flex mb-3 flex-wrap">
         <MetricHighlight title="WPM" metricValue={totalWPM} />
         <MetricHighlight title="Correct Words" metricValue={correctWords} />
         <MetricHighlight title="Skipped Words" metricValue={skippedWords} />
@@ -176,27 +180,31 @@ const RoundComplete = ({
         <MetricHighlight title="Time Taken" metricValue={roundDuration + "s"} />
       </ul>
 
-      <RelatedSongs artistName={songData?.title.split(" by")[1]} handleSongChange={handleSongChange} />
+      <RelatedSongs
+        artistName={songData?.title.split(" by")[1]}
+        handleSongChange={handleSongChange}
+      />
 
       <h2 className="text-xl font-dela mb-2 mt-0">Per-Block Breakdown</h2>
 
-      <RoundBreakdownChart data={wpmByBlock.map((d, index) => ({ ...d, id: `B${index + 1}` }))} />
+      <RoundBreakdownChart
+        data={wpmByBlock.map((d, index) => ({ ...d, id: `B${index + 1}` }))}
+      />
 
-      {wpmByBlock && <ul>
-        {wpmByBlock.map((block, index) => {
-          return (
-            <li
-              key={`${index}-${block.id}`}
-              className="text-base mb-1"
-            >
-              <span className="bg-gray-800 rounded-sm px-2 py-0.5 text-sm mr-2">{`B${index + 1}`}</span>
-              {`${block.id}: ${block.wpm} WPM`}
-            </li>
-          );
-        })}
-      </ul>}
-
-
+      {wpmByBlock && (
+        <ul>
+          {wpmByBlock.map((block, index) => {
+            return (
+              <li key={`${index}-${block.id}`} className="text-base mb-1">
+                <span className="bg-gray-800 rounded-sm px-2 py-0.5 text-sm mr-2">{`B${
+                  index + 1
+                }`}</span>
+                {`${block.id}: ${block.wpm} WPM`}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </motion.div>
   );
 };

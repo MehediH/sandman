@@ -41,6 +41,7 @@ export default function Home({
 
   const [coverColors, setCoverColors] = useState([]);
   const [restoredFromSearch, setRestoredFromSearch] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     if (router.query.i && router.query.q && !restoredFromSearch) {
@@ -69,7 +70,19 @@ export default function Home({
     }
 
     restoreProfanity();
+
+    setIsMobile(window.innerWidth < 1000);
+
+    window.addEventListener("resize", handleWindowResize);
+
+    return () => {
+      window.removeEventListener("resize", handleWindowResize);
+    };
   }, [activeBlock, userTypeByBlock, song, playing, router.query]);
+
+  const handleWindowResize = (e) => {
+    setIsMobile(window.innerWidth < 1000);
+  };
 
   const restoreProfanity = async () => {
     const profanity = await localStorage.getItem("sandmanProfanity");
@@ -174,147 +187,170 @@ export default function Home({
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <motion.div
-        style={{
-          "--tw-gradient-from": coverColors ? coverColors[1] : "#1DB954",
-        }}
-        className={`lyricsBox bg-gradient-to-b from-green-700 to-black text-white rounded-extraLarge shadow-lg`}
-        initial={{ y: "100vh", opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: "100vh", opacity: 0 }}
-        transition={{
-          delay: 0.5,
-          y: { type: "spring", stiffness: 40 },
-          default: { duration: 2 },
-        }}
-      >
-        <div className="p-20 max-w-screen-2xl m-auto flex flex-col">
-          <div className="flex items-center">
+      {isMobile && (
+        <div className="text-white">
+          <p>
+            Unfortunately, mobile devices are not supported by sandman. Please
+            give it a go when you are on your desktop.
+          </p>
+
+          <p className="mt-4">Have a good day!</p>
+          <div className="mt-2 flex items-center">
+            <p className="text-3xl pr-2">-</p>
             <Image
               src="/sandman.svg"
               alt="me"
-              width="50"
-              height="50"
+              width="30"
+              height="30"
               draggable="false"
             />
-            <Search
-              handleSongChange={handleSongChange}
-              failedToRestoreFromSearch={() => setSong(defaultSongMetadata)}
-            />
-            {!session && (
-              <button
-                className="ml-auto hover:opacity-80 focus:outline-none"
-                onClick={() => signIn("spotify")}
-              >
-                Sign in with Spotify
-              </button>
-            )}
-            {session && (
-              <div className="ml-auto flex-row-reverse flex">
+          </div>
+        </div>
+      )}
+
+      {!isMobile && (
+        <motion.div
+          style={{
+            "--tw-gradient-from": coverColors ? coverColors[1] : "#1DB954",
+          }}
+          className={`lyricsBox bg-gradient-to-b from-green-700 to-black text-white rounded-extraLarge shadow-lg`}
+          initial={{ y: "100vh", opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: "100vh", opacity: 0 }}
+          transition={{
+            delay: 0.5,
+            y: { type: "spring", stiffness: 40 },
+            default: { duration: 2 },
+          }}
+        >
+          <div className="p-20 max-w-screen-2xl m-auto flex flex-col">
+            <div className="flex items-center">
+              <Image
+                src="/sandman.svg"
+                alt="me"
+                width="50"
+                height="50"
+                draggable="false"
+              />
+              <Search
+                handleSongChange={handleSongChange}
+                failedToRestoreFromSearch={() => setSong(defaultSongMetadata)}
+              />
+              {!session && (
                 <button
-                  className="ml-5 hover:opacity-50 focus:outline-none"
-                  onClick={() => signOut()}
+                  className="ml-auto hover:opacity-80 focus:outline-none"
+                  onClick={() => signIn("spotify")}
                 >
-                  Sign out
+                  Sign in with Spotify
                 </button>
-                <img
-                  className="w-10 h-10 rounded-full select-none pointer-events-none inline-block"
-                  src={session?.user?.picture}
-                  draggable={false}
-                ></img>
-              </div>
+              )}
+              {session && (
+                <div className="ml-auto flex-row-reverse flex">
+                  <button
+                    className="ml-5 hover:opacity-50 focus:outline-none"
+                    onClick={() => signOut()}
+                  >
+                    Sign out
+                  </button>
+                  <img
+                    className="w-10 h-10 rounded-full select-none pointer-events-none inline-block"
+                    src={session?.user?.picture}
+                    draggable={false}
+                  ></img>
+                </div>
+              )}
+            </div>
+
+            {err ? (
+              <p className="my-20">
+                This song is not supported yet. Please try a different one.
+                <code className="block text-sm my-2 opacity-70">
+                  Error message: {err}
+                </code>
+              </p>
+            ) : song === null ? (
+              <SongPlaceholder
+                vibrant={coverColors ? coverColors[0] : ""}
+                darkVibrant={coverColors ? coverColors[1] : ""}
+              />
+            ) : (
+              <>
+                <Song
+                  data={song}
+                  currentlyPlaying={true}
+                  isTyping={
+                    blockTimes && blockTimes.length !== 0 && !roundComplete
+                  }
+                  playingState={playing}
+                  nextBlock={
+                    activeBlock + 1 < blockTitles.length
+                      ? blockTitles[activeBlock + 1]
+                      : null
+                  }
+                  requestBlockComplete={handleBlockComplete}
+                >
+                  <label
+                    htmlFor="hideProfanity"
+                    className="opacity-70 hover:opacity-100 transition-all cursor-pointer mt-2"
+                  >
+                    <input
+                      tabIndex="0"
+                      type="checkbox"
+                      id="hideProfanity"
+                      className="rounded-sm mr-2"
+                      onChange={() => {
+                        setProfanityHidden((h) => {
+                          localStorage.setItem(
+                            "sandmanProfanity",
+                            JSON.stringify(!h)
+                          );
+
+                          return !h;
+                        });
+                      }}
+                      checked={profanityHidden}
+                    />
+                    <span>Filter profanity</span>
+                  </label>
+
+                  {!lyricsLoading && !roundComplete && (
+                    <Lyrics
+                      lyricsData={lyrics}
+                      activeBlock={activeBlock}
+                      profanityHidden={profanityHidden}
+                      blockComplete={handleBlockComplete}
+                      finishRound={handleRoundComplete}
+                      startInitialTimer={() => {
+                        setBlockTimes([new Date()]);
+                      }}
+                    />
+                  )}
+
+                  {lyricsLoading && !roundComplete && (
+                    <LyricsPlaceholder
+                      vibrant={coverColors ? coverColors[0] : ""}
+                      darkVibrant={coverColors ? coverColors[1] : ""}
+                    />
+                  )}
+
+                  {!lyricsLoading && roundComplete && (
+                    <RoundComplete
+                      userTyping={userTypeByBlock}
+                      lyricsData={lyrics}
+                      blockTitles={blockTitles}
+                      profanityHidden={profanityHidden}
+                      blockStartTimes={blockTimes}
+                      restartRound={handleRoundRestart}
+                      handleSongChange={handleSongChange}
+                      songData={song}
+                    />
+                  )}
+                </Song>
+              </>
             )}
           </div>
-
-          {err ? (
-            <p className="my-20">
-              This song is not supported yet. Please try a different one.
-              <code className="block text-sm my-2 opacity-70">
-                Error message: {err}
-              </code>
-            </p>
-          ) : song === null ? (
-            <SongPlaceholder
-              vibrant={coverColors ? coverColors[0] : ""}
-              darkVibrant={coverColors ? coverColors[1] : ""}
-            />
-          ) : (
-            <>
-              <Song
-                data={song}
-                currentlyPlaying={true}
-                isTyping={
-                  blockTimes && blockTimes.length !== 0 && !roundComplete
-                }
-                playingState={playing}
-                nextBlock={
-                  activeBlock + 1 < blockTitles.length
-                    ? blockTitles[activeBlock + 1]
-                    : null
-                }
-                requestBlockComplete={handleBlockComplete}
-              >
-                <label
-                  htmlFor="hideProfanity"
-                  className="opacity-70 hover:opacity-100 transition-all cursor-pointer mt-2"
-                >
-                  <input
-                    tabIndex="0"
-                    type="checkbox"
-                    id="hideProfanity"
-                    className="rounded-sm mr-2"
-                    onChange={() => {
-                      setProfanityHidden((h) => {
-                        localStorage.setItem(
-                          "sandmanProfanity",
-                          JSON.stringify(!h)
-                        );
-
-                        return !h;
-                      });
-                    }}
-                    checked={profanityHidden}
-                  />
-                  <span>Filter profanity</span>
-                </label>
-
-                {!lyricsLoading && !roundComplete && (
-                  <Lyrics
-                    lyricsData={lyrics}
-                    activeBlock={activeBlock}
-                    profanityHidden={profanityHidden}
-                    blockComplete={handleBlockComplete}
-                    finishRound={handleRoundComplete}
-                    startInitialTimer={() => {
-                      setBlockTimes([new Date()]);
-                    }}
-                  />
-                )}
-
-                {lyricsLoading && !roundComplete && (
-                  <LyricsPlaceholder
-                    vibrant={coverColors ? coverColors[0] : ""}
-                    darkVibrant={coverColors ? coverColors[1] : ""}
-                  />
-                )}
-
-                {!lyricsLoading && roundComplete && (
-                  <RoundComplete
-                    userTyping={userTypeByBlock}
-                    lyricsData={lyrics}
-                    blockTitles={blockTitles}
-                    profanityHidden={profanityHidden}
-                    blockStartTimes={blockTimes}
-                    restartRound={handleRoundRestart}
-                    handleSongChange={handleSongChange}
-                    songData={song}
-                  />
-                )}
-              </Song>
-            </>
-          )}
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }
