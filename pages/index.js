@@ -356,16 +356,17 @@ export default function Home({
 }
 
 export async function getStaticProps() {
-  const defaultSongName = "Hurricane",
-    defaultSongArtist = "The Weeknd";
+  const defaultSongName = "Ok Ok by Kanye West",
+    defaultSongArtist = "Kanye West";
 
-  const { data: defaultSongLyrics, err } = await getLyricsFromGenius(
-    defaultSongName,
-    defaultSongArtist
-  );
+
   const { data: songMetadata } = await searchSongsOnGenius(
     defaultSongName,
     defaultSongArtist
+  );
+
+  const { data: defaultSongLyrics, err } = await getLyricsFromGenius(
+    null, null, songMetadata?.[0]?.url
   );
 
   if (err) {

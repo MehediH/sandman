@@ -3,8 +3,8 @@ import { getLyrics } from "genius-lyrics-api";
 export const getLyricsFromGenius = async (songName, artistName, songUrl) => {
   const options = {
     apiKey: process.env.NEXT_PUBLIC_GENIUS_KEY,
-    title: songName ? songName : "",
-    artist: artistName ? artistName : "",
+    title: songName || "",
+    artist: artistName || "",
     optimizeQuery: true,
   };
 
