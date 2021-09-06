@@ -356,8 +356,8 @@ export default function Home({
 }
 
 export async function getStaticProps() {
-  const defaultSongName = "hurricane",
-    defaultSongArtist = "kanye west";
+  const defaultSongName = "Hurricane",
+    defaultSongArtist = "The Weeknd";
 
   const { data: defaultSongLyrics, err } = await getLyricsFromGenius(
     defaultSongName,
